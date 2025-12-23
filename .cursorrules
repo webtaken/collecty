@@ -1,0 +1,54 @@
+# Collecty - Cursor Rules
+
+## Project Context
+Collecty is an email collection plugin built with Next.js 15, Tailwind CSS, shadcn/ui, Drizzle ORM, and Auth.js.
+
+## Code Style
+- Use TypeScript strict mode for all files
+- Prefer named exports over default exports (except for pages)
+- Use `type` for type aliases, `interface` for extendable shapes
+- Prefix interfaces with `I` only when necessary to avoid conflicts
+- Use PascalCase for components, camelCase for functions/variables
+
+## File Structure
+- `app/` - Next.js App Router pages and layouts
+- `components/` - React components (ui/ for shadcn, features/ for feature-specific)
+- `lib/` - Utility functions, configurations, and shared logic
+- `db/` - Drizzle schema, migrations, and database utilities
+- `actions/` - Server actions for form handling
+
+## Component Guidelines
+- Use Server Components by default, add 'use client' only when needed
+- Extract reusable UI into shadcn-style components in components/ui/
+- Use React Hook Form + Zod for form validation
+- Colocate component-specific types in the same file
+
+## Database (Drizzle ORM)
+- Define schemas in `db/schema/` with one file per domain
+- Use snake_case for database columns, camelCase in TypeScript
+- Always define relations explicitly
+- Use transactions for multi-table operations
+
+## API Routes
+- Use Next.js App Router route handlers (route.ts)
+- Return proper HTTP status codes
+- Validate input with Zod schemas
+- Handle errors gracefully with consistent error response format
+
+## Authentication
+- Protect routes using middleware and server-side checks
+- Use Auth.js helpers: auth(), signIn(), signOut()
+- Store user references via userId foreign key
+
+## Styling
+- Use Tailwind CSS utility classes
+- Follow shadcn/ui conventions for component styling
+- Use CSS variables for theming (defined in globals.css)
+- Mobile-first responsive design
+
+## Naming Conventions
+- Files: kebab-case (email-form.tsx)
+- Components: PascalCase (EmailForm)
+- Hooks: camelCase with use prefix (useEmailList)
+- Server Actions: camelCase with action suffix (createProjectAction)
+

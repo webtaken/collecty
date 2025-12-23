@@ -1,36 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Collecty
+
+An email collection plugin built with Next.js 15, Tailwind CSS, shadcn/ui, Drizzle ORM, and Auth.js.
+
+## Features
+
+- **OAuth Authentication** - Sign in with Google or GitHub
+- **Project Management** - Create and manage multiple email collection projects
+- **Customizable Popup Widgets** - Design widgets that match your brand
+- **Smart Triggers** - Show popups on delay, scroll, or exit-intent
+- **Subscriber Dashboard** - View and export collected emails
+- **Easy Integration** - Single script tag to embed on any website
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: Auth.js v5 (NextAuth)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 22+
+- PostgreSQL database
+- Google and/or GitHub OAuth credentials
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd collecty
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edit `.env.local` with your values:
+   ```env
+   # Database
+   DATABASE_URL="postgresql://user:password@localhost:5432/collecty"
+
+   # Auth.js - Generate with: openssl rand -base64 32
+   AUTH_SECRET="your-auth-secret"
+
+   # Google OAuth
+   AUTH_GOOGLE_ID="your-google-client-id"
+   AUTH_GOOGLE_SECRET="your-google-client-secret"
+
+   # GitHub OAuth
+   AUTH_GITHUB_ID="your-github-client-id"
+   AUTH_GITHUB_SECRET="your-github-client-secret"
+
+   # App URL
+   NEXT_PUBLIC_APP_URL="http://localhost:3000"
+   ```
+
+4. Push the database schema:
+   ```bash
+   npm run db:push
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+### Database Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Generate migrations from schema changes
+npm run db:generate
+
+# Apply migrations
+npm run db:migrate
+
+# Push schema directly (development)
+npm run db:push
+
+# Open Drizzle Studio
+npm run db:studio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # Auth pages (login)
+│   ├── (dashboard)/        # Dashboard pages
+│   ├── api/                # API routes
+│   └── widget/             # Widget script endpoint
+├── components/
+│   ├── ui/                 # shadcn/ui components
+│   └── features/           # Feature-specific components
+├── db/
+│   └── schema/             # Drizzle schema definitions
+├── lib/                    # Utility functions
+└── actions/                # Server actions
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Widget Integration
 
-## Learn More
+To add Collecty to your website, copy the embed code from your project's dashboard and paste it before the closing `</body>` tag:
 
-To learn more about Next.js, take a look at the following resources:
+```html
+<script>
+  (function(w,d,s,o,f,js,fjs){
+    w['CollectyWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
+    js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
+    js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
+  }(window,document,'script','collecty','YOUR_APP_URL/widget/PROJECT_ID/widget.js'));
+  collecty('init', 'PROJECT_ID');
+</script>
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Manual Trigger
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To show the widget programmatically:
 
-## Deploy on Vercel
+```javascript
+collecty('show');
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To hide the widget:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```javascript
+collecty('hide');
+```
+
+## API
+
+### Subscribe Endpoint
+
+`POST /api/v1/subscribe`
+
+```json
+{
+  "email": "user@example.com",
+  "projectId": "uuid",
+  "metadata": {
+    "userAgent": "...",
+    "referrer": "...",
+    "pageUrl": "..."
+  }
+}
+```
+
+Headers:
+- `x-api-key` (optional): API key for authenticated requests
+
+## License
+
+MIT
