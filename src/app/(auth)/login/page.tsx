@@ -1,6 +1,12 @@
 import { auth, signIn } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default async function LoginPage({
@@ -10,7 +16,7 @@ export default async function LoginPage({
 }) {
   const session = await auth();
   const params = await searchParams;
-  
+
   if (session) {
     redirect(params.callbackUrl || "/dashboard");
   }
@@ -18,7 +24,7 @@ export default async function LoginPage({
   return (
     <Card className="w-full max-w-md mx-4 border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
       <CardHeader className="space-y-4 text-center pb-2">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+        <div className="mx-auto w-16 h-16 bg-linear-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
           <svg
             className="w-9 h-9 text-white"
             fill="none"
@@ -50,11 +56,13 @@ export default async function LoginPage({
               : "An error occurred during sign in. Please try again."}
           </div>
         )}
-        
+
         <form
           action={async () => {
             "use server";
-            await signIn("google", { redirectTo: params.callbackUrl || "/dashboard" });
+            await signIn("google", {
+              redirectTo: params.callbackUrl || "/dashboard",
+            });
           }}
         >
           <Button
@@ -84,7 +92,7 @@ export default async function LoginPage({
           </Button>
         </form>
 
-        <form
+        {/* <form
           action={async () => {
             "use server";
             await signIn("github", { redirectTo: params.callbackUrl || "/dashboard" });
@@ -104,7 +112,7 @@ export default async function LoginPage({
             </svg>
             Continue with GitHub
           </Button>
-        </form>
+        </form> */}
 
         <p className="text-xs text-center text-slate-500 pt-4">
           By continuing, you agree to our Terms of Service and Privacy Policy.
@@ -113,4 +121,3 @@ export default async function LoginPage({
     </Card>
   );
 }
-
