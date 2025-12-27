@@ -1,12 +1,84 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, projects } from "@/db";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
+
+// UUID validation schema
+const uuidSchema = z.string().uuid();
+
+// Validate CSS color (hex, rgb, rgba, hsl, hsla, or named colors)
+const cssColorRegex =
+  /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[\d.]+\s*\)|hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\)|hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*[\d.]+\s*\)|[a-zA-Z]+)$/;
+
+// Valid trigger types
+const validTriggerTypes = ["delay", "scroll", "exit-intent", "click"] as const;
+
+// Simple in-memory rate limiter
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function isRateLimited(
+  identifier: string,
+  limit: number = 60,
+  windowMs: number = 60000
+): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+
+  // Clean up old entries periodically (every 100th check)
+  if (Math.random() < 0.01) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (now > value.resetTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
+    return false;
+  }
+
+  if (record.count >= limit) {
+    return true;
+  }
+
+  record.count++;
+  return false;
+}
+
+// Security headers for the widget script
+const securityHeaders = {
+  "Content-Type": "application/javascript; charset=utf-8",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+};
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   const { projectId } = await params;
+
+  // Rate limit by IP
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+
+  if (isRateLimited(`widget:${ip}`)) {
+    return new NextResponse("// Rate limited. Please try again later.", {
+      status: 429,
+      headers: securityHeaders,
+    });
+  }
+
+  // Validate projectId is a valid UUID to prevent injection
+  const uuidValidation = uuidSchema.safeParse(projectId);
+  if (!uuidValidation.success) {
+    return new NextResponse("// Invalid project ID", {
+      status: 400,
+      headers: securityHeaders,
+    });
+  }
 
   // Get project and its widget config
   const [project] = await db
@@ -17,16 +89,14 @@ export async function GET(
   if (!project || !project.isActive) {
     return new NextResponse("// Widget not found or inactive", {
       status: 404,
-      headers: {
-        "Content-Type": "application/javascript",
-      },
+      headers: securityHeaders,
     });
   }
 
   const config = project.widgetConfig as Record<string, unknown>;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://collecty.app";
 
-  // Helper to safely escape strings for JavaScript injection
+  // Helper to safely escape strings for JavaScript string literals
   const escapeJs = (str: string): string => {
     return str
       .replace(/\\/g, "\\\\")
@@ -34,27 +104,68 @@ export async function GET(
       .replace(/"/g, '\\"')
       .replace(/\n/g, "\\n")
       .replace(/\r/g, "\\r")
+      .replace(/\t/g, "\\t")
       .replace(/</g, "\\x3c")
-      .replace(/>/g, "\\x3e");
+      .replace(/>/g, "\\x3e")
+      .replace(/\u2028/g, "\\u2028") // Line separator
+      .replace(/\u2029/g, "\\u2029"); // Paragraph separator
   };
 
-  // Extract config values with defaults (injected at build time)
-  const title = escapeJs(String(config.title || "Subscribe to our newsletter"));
-  const description = escapeJs(
-    String(
-      config.description || "Get the latest updates delivered to your inbox."
-    )
+  // Validate and sanitize color values
+  const sanitizeColor = (color: unknown, defaultColor: string): string => {
+    const colorStr = String(color || defaultColor).trim();
+    if (cssColorRegex.test(colorStr)) {
+      return colorStr;
+    }
+    return defaultColor;
+  };
+
+  // Validate trigger type
+  const sanitizeTriggerType = (type: unknown): string => {
+    const typeStr = String(type || "delay").toLowerCase();
+    if (
+      validTriggerTypes.includes(typeStr as (typeof validTriggerTypes)[number])
+    ) {
+      return typeStr;
+    }
+    return "delay";
+  };
+
+  // Sanitize text input with length limits
+  const sanitizeText = (
+    text: unknown,
+    defaultText: string,
+    maxLength: number = 500
+  ): string => {
+    const textStr = String(text || defaultText).slice(0, maxLength);
+    return escapeJs(textStr);
+  };
+
+  // Extract and validate config values with defaults
+  const title = sanitizeText(config.title, "Subscribe to our newsletter", 200);
+  const description = sanitizeText(
+    config.description,
+    "Get the latest updates delivered to your inbox.",
+    500
   );
-  const buttonText = escapeJs(String(config.buttonText || "Subscribe"));
-  const successMessage = escapeJs(
-    String(config.successMessage || "Thanks for subscribing!")
+  const buttonText = sanitizeText(config.buttonText, "Subscribe", 50);
+  const successMessage = sanitizeText(
+    config.successMessage,
+    "Thanks for subscribing!",
+    200
   );
-  const primaryColor = escapeJs(String(config.primaryColor || "#3b82f6"));
-  const backgroundColor = escapeJs(String(config.backgroundColor || "#ffffff"));
-  const textColor = escapeJs(String(config.textColor || "#1f2937"));
+  const primaryColor = sanitizeColor(config.primaryColor, "#3b82f6");
+  const backgroundColor = sanitizeColor(config.backgroundColor, "#ffffff");
+  const textColor = sanitizeColor(config.textColor, "#1f2937");
   const showBranding = config.showBranding !== false;
-  const triggerType = escapeJs(String(config.triggerType || "delay"));
-  const triggerValue = Number(config.triggerValue) || 5;
+  const triggerType = sanitizeTriggerType(config.triggerType);
+  const triggerValue = Math.max(
+    0,
+    Math.min(Number(config.triggerValue) || 5, 3600)
+  ); // Cap at 1 hour
+
+  // Escape projectId for safe JavaScript injection (already validated as UUID)
+  const safeProjectId = escapeJs(projectId);
 
   // Generate the widget JavaScript with Shadow DOM for complete isolation
   const widgetScript = `
@@ -65,14 +176,21 @@ export async function GET(
   if (window.__collectyLoaded) return;
   window.__collectyLoaded = true;
 
-  const PROJECT_ID = "${projectId}";
-  const API_URL = "${appUrl}/api/v1/subscribe";
+  const PROJECT_ID = "${safeProjectId}";
+  const API_URL = "${escapeJs(appUrl)}/api/v1/subscribe";
   const WIDGET_TITLE = "${title}";
   const WIDGET_DESCRIPTION = "${description}";
   const BUTTON_TEXT = "${buttonText}";
   const SUCCESS_MESSAGE = "${successMessage}";
-  const TRIGGER_TYPE = "${triggerType}";
+  const TRIGGER_TYPE = "${escapeJs(triggerType)}";
   const TRIGGER_VALUE = ${triggerValue};
+
+  // HTML encode function to prevent XSS when inserting into innerHTML
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
   // Widget state
   let shadowRoot = null;
@@ -273,16 +391,18 @@ export async function GET(
           '<path d="M18 6L6 18M6 6l12 12"/>' +
         '</svg>' +
       '</button>' +
-      '<h2 class="collecty-title" id="collecty-title">' + WIDGET_TITLE + '</h2>' +
-      '<p class="collecty-description">' + WIDGET_DESCRIPTION + '</p>' +
+      '<h2 class="collecty-title" id="collecty-title">' + escapeHtml(WIDGET_TITLE) + '</h2>' +
+      '<p class="collecty-description">' + escapeHtml(WIDGET_DESCRIPTION) + '</p>' +
       '<form class="collecty-form">' +
         '<input type="email" class="collecty-input" placeholder="Enter your email" required autocomplete="email" />' +
-        '<button type="submit" class="collecty-button">' + BUTTON_TEXT + '</button>' +
+        '<button type="submit" class="collecty-button">' + escapeHtml(BUTTON_TEXT) + '</button>' +
       '</form>' +
       '<div class="collecty-message" role="status" aria-live="polite"></div>' +
       ${
         showBranding
-          ? `'<p class="collecty-branding">Powered by <a href="${appUrl}" target="_blank" rel="noopener noreferrer">Collecty</a></p>'`
+          ? `'<p class="collecty-branding">Powered by <a href="${escapeJs(
+              appUrl
+            )}" target="_blank" rel="noopener noreferrer">Collecty</a></p>'`
           : `''`
       } +
     '</div>';
@@ -505,8 +625,8 @@ export async function GET(
   return new NextResponse(widgetScript, {
     status: 200,
     headers: {
-      "Content-Type": "application/javascript",
-      "Cache-Control": "public, max-age=3600",
+      ...securityHeaders,
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=60", // Reduced cache time for faster config updates
       "Access-Control-Allow-Origin": "*",
     },
   });
