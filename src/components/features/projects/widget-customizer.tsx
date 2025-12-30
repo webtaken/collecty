@@ -1,256 +1,92 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateWidgetConfigAction } from "@/actions/projects";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { WidgetConfig } from "@/db/schema/projects";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PopupWidgetCustomizer } from "./popup-widget-customizer";
+import { InlineWidgetCustomizer } from "./inline-widget-customizer";
+import { WidgetInstallCode } from "./widget-install-code";
+import type { WidgetConfig, InlineWidgetConfig } from "@/db/schema/projects";
 
 type WidgetCustomizerProps = {
   projectId: string;
   initialConfig: WidgetConfig;
+  initialInlineConfig: InlineWidgetConfig;
 };
 
-export function WidgetCustomizer({ projectId, initialConfig }: WidgetCustomizerProps) {
-  const [config, setConfig] = useState<WidgetConfig>(initialConfig);
-  const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
-
-  const handleChange = <K extends keyof WidgetConfig>(
-    key: K,
-    value: WidgetConfig[K]
-  ) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
-    setSaved(false);
-  };
-
-  const handleSave = () => {
-    startTransition(async () => {
-      await updateWidgetConfigAction(projectId, config);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    });
-  };
-
+export function WidgetCustomizer({
+  projectId,
+  initialConfig,
+  initialInlineConfig,
+}: WidgetCustomizerProps) {
   return (
-    <div className="space-y-6">
-      {/* Content */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Content</h4>
-        
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={config.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={config.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            rows={2}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="buttonText">Button Text</Label>
-          <Input
-            id="buttonText"
-            value={config.buttonText}
-            onChange={(e) => handleChange("buttonText", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="successMessage">Success Message</Label>
-          <Input
-            id="successMessage"
-            value={config.successMessage}
-            onChange={(e) => handleChange("successMessage", e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Colors */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Colors</h4>
-        
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="primaryColor">Primary</Label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                id="primaryColor"
-                value={config.primaryColor}
-                onChange={(e) => handleChange("primaryColor", e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer"
-              />
-              <Input
-                value={config.primaryColor}
-                onChange={(e) => handleChange("primaryColor", e.target.value)}
-                className="flex-1 font-mono text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="backgroundColor">Background</Label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                id="backgroundColor"
-                value={config.backgroundColor}
-                onChange={(e) => handleChange("backgroundColor", e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer"
-              />
-              <Input
-                value={config.backgroundColor}
-                onChange={(e) => handleChange("backgroundColor", e.target.value)}
-                className="flex-1 font-mono text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="textColor">Text</Label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                id="textColor"
-                value={config.textColor}
-                onChange={(e) => handleChange("textColor", e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer"
-              />
-              <Input
-                value={config.textColor}
-                onChange={(e) => handleChange("textColor", e.target.value)}
-                className="flex-1 font-mono text-sm"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Behavior */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Behavior</h4>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="position">Position</Label>
-            <Select
-              value={config.position}
-              onValueChange={(value) => handleChange("position", value as WidgetConfig["position"])}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="center">Center</SelectItem>
-                <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                <SelectItem value="top-right">Top Right</SelectItem>
-                <SelectItem value="top-left">Top Left</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="triggerType">Trigger</Label>
-            <Select
-              value={config.triggerType}
-              onValueChange={(value) => handleChange("triggerType", value as WidgetConfig["triggerType"])}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="delay">Time Delay</SelectItem>
-                <SelectItem value="scroll">Scroll Percentage</SelectItem>
-                <SelectItem value="exit-intent">Exit Intent</SelectItem>
-                <SelectItem value="click">Manual Click</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {(config.triggerType === "delay" || config.triggerType === "scroll") && (
-          <div className="space-y-2">
-            <Label htmlFor="triggerValue">
-              {config.triggerType === "delay" ? "Delay (seconds)" : "Scroll Percentage"}
-            </Label>
-            <Input
-              id="triggerValue"
-              type="number"
-              min={0}
-              max={config.triggerType === "scroll" ? 100 : undefined}
-              value={config.triggerValue}
-              onChange={(e) => handleChange("triggerValue", parseInt(e.target.value) || 0)}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Preview */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Preview</h4>
-        <div className="border rounded-lg p-4 bg-slate-50">
-          <div
-            className="mx-auto max-w-sm rounded-lg shadow-lg overflow-hidden"
-            style={{ backgroundColor: config.backgroundColor }}
+    <Tabs defaultValue="popup" className="w-full">
+      <TabsList className="w-full mb-6">
+        <TabsTrigger value="popup" className="flex-1">
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <div className="p-4">
-              <h3
-                className="font-bold mb-1"
-                style={{ color: config.textColor }}
-              >
-                {config.title}
-              </h3>
-              <p
-                className="text-sm mb-3 opacity-80"
-                style={{ color: config.textColor }}
-              >
-                {config.description}
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="email@example.com"
-                  className="flex-1 px-3 py-1.5 rounded border text-sm"
-                  disabled
-                />
-                <button
-                  className="px-3 py-1.5 rounded text-white text-sm font-medium"
-                  style={{ backgroundColor: config.primaryColor }}
-                  disabled
-                >
-                  {config.buttonText}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+            />
+          </svg>
+          Popup Widget
+        </TabsTrigger>
+        <TabsTrigger value="inline" className="flex-1">
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+            />
+          </svg>
+          Inline Form
+        </TabsTrigger>
+      </TabsList>
 
-      <Button onClick={handleSave} disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : saved ? "Saved!" : "Save Widget Settings"}
-      </Button>
-    </div>
+      <TabsContent value="popup" className="space-y-6">
+        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 mb-4">
+          <p className="text-sm text-indigo-800">
+            <span className="font-medium">Popup widget</span> appears as an
+            overlay that can be triggered by time delay, scroll position, exit
+            intent, or manual activation.
+          </p>
+        </div>
+        <PopupWidgetCustomizer
+          projectId={projectId}
+          initialConfig={initialConfig}
+        />
+        <div className="border-t pt-6">
+          <WidgetInstallCode projectId={projectId} widgetType="popup" />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="inline" className="space-y-6">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 mb-4">
+          <p className="text-sm text-emerald-800">
+            <span className="font-medium">Inline form</span> embeds directly
+            into your page content - perfect for footers, sidebars, or any
+            section where you want a persistent signup form.
+          </p>
+        </div>
+        <InlineWidgetCustomizer
+          projectId={projectId}
+          initialConfig={initialInlineConfig}
+        />
+        <div className="border-t pt-6">
+          <WidgetInstallCode projectId={projectId} widgetType="inline" />
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }
-

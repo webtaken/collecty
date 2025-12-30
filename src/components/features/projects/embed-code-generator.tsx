@@ -1,65 +1,134 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { WidgetConfig } from "@/db/schema/projects";
+import type { WidgetConfig, InlineWidgetConfig } from "@/db/schema/projects";
 
 type EmbedCodeGeneratorProps = {
   projectId: string;
   widgetConfig: WidgetConfig;
+  inlineWidgetConfig: InlineWidgetConfig;
 };
 
-export function EmbedCodeGenerator({ projectId, widgetConfig }: EmbedCodeGeneratorProps) {
-  const [copied, setCopied] = useState(false);
+export function EmbedCodeGenerator({
+  projectId,
+  widgetConfig,
+  inlineWidgetConfig,
+}: EmbedCodeGeneratorProps) {
+  const [copiedPopup, setCopiedPopup] = useState(false);
+  const [copiedInline, setCopiedInline] = useState(false);
+  const [copiedHtml, setCopiedHtml] = useState(false);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://collecty.app";
 
-  const scriptCode = `<!-- Collecty Email Collection Widget -->
+  const popupScriptCode = `<!-- Collecty Popup Widget -->
 <script>
-  (function(w,d,s,o,f,js,fjs){
-    w['CollectyWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
-    js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
-    js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
-  }(window,document,'script','collecty','${appUrl}/widget/${projectId}/widget.js'));
-  collecty('init', '${projectId}');
+  (function(c,o,l,e,t,y){
+    c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
+    var s=o.createElement('script');s.async=1;s.src=l;
+    o.head.appendChild(s);
+  })(window,document,'${appUrl}/widget/${projectId}/widget.js');
 </script>`;
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(scriptCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const inlineScriptCode = `<!-- Collecty Inline Form -->
+<div data-collecty-inline="${projectId}"></div>
+<script src="${appUrl}/widget/${projectId}/inline.js" async></script>`;
+
+  const inlineHtmlUrl = `${appUrl}/widget/${projectId}/inline.html`;
+
+  const handleCopyPopup = async () => {
+    await navigator.clipboard.writeText(popupScriptCode);
+    setCopiedPopup(true);
+    setTimeout(() => setCopiedPopup(false), 2000);
+  };
+
+  const handleCopyInline = async () => {
+    await navigator.clipboard.writeText(inlineScriptCode);
+    setCopiedInline(true);
+    setTimeout(() => setCopiedInline(false), 2000);
+  };
+
+  const handleCopyHtml = async () => {
+    try {
+      const response = await fetch(inlineHtmlUrl);
+      const html = await response.text();
+      await navigator.clipboard.writeText(html);
+      setCopiedHtml(true);
+      setTimeout(() => setCopiedHtml(false), 2000);
+    } catch {
+      window.open(inlineHtmlUrl, "_blank");
+    }
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Install Widget</CardTitle>
-          <CardDescription>
-            Add this code snippet to your website to display the email collection popup
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Tabs defaultValue="script">
-            <TabsList>
-              <TabsTrigger value="script">Script Tag</TabsTrigger>
-              <TabsTrigger value="npm">NPM Package</TabsTrigger>
-            </TabsList>
+      {/* Widget Type Selection */}
+      <Tabs defaultValue="popup" className="w-full">
+        <TabsList className="w-full mb-4">
+          <TabsTrigger value="popup" className="flex-1">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+              />
+            </svg>
+            Popup Widget
+          </TabsTrigger>
+          <TabsTrigger value="inline" className="flex-1">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+              />
+            </svg>
+            Inline Form
+          </TabsTrigger>
+        </TabsList>
 
-            <TabsContent value="script" className="space-y-4">
+        {/* Popup Widget Tab */}
+        <TabsContent value="popup" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Install Popup Widget</CardTitle>
+              <CardDescription>
+                Add this code to display a popup that can be triggered by time
+                delay, scroll, exit intent, or manually
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="relative">
                 <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                  <code>{scriptCode}</code>
+                  <code>{popupScriptCode}</code>
                 </pre>
                 <Button
                   size="sm"
                   variant="secondary"
                   className="absolute top-2 right-2"
-                  onClick={handleCopy}
+                  onClick={handleCopyPopup}
                 >
-                  {copied ? (
+                  {copiedPopup ? (
                     <>
                       <svg
                         className="w-4 h-4 mr-1"
@@ -99,80 +168,294 @@ export function EmbedCodeGenerator({ projectId, widgetConfig }: EmbedCodeGenerat
 
               <div className="text-sm text-slate-600 space-y-2">
                 <p>
-                  <strong>Installation:</strong> Paste this code before the closing{" "}
-                  <code className="bg-slate-100 px-1 py-0.5 rounded">&lt;/body&gt;</code>{" "}
+                  <strong>Installation:</strong> Paste this code before the
+                  closing{" "}
+                  <code className="bg-slate-100 px-1 py-0.5 rounded">
+                    &lt;/body&gt;
+                  </code>{" "}
                   tag on your website.
                 </p>
                 <p>
-                  <strong>Note:</strong> The widget will automatically appear based on
-                  your configured trigger settings.
+                  <strong>Note:</strong> The widget will automatically appear
+                  based on your configured trigger settings.
                 </p>
               </div>
-            </TabsContent>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="npm" className="space-y-4">
-              <div className="p-4 bg-slate-50 rounded-lg border">
-                <p className="text-sm text-slate-600">
-                  NPM package coming soon! For now, use the script tag installation method.
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Widget Preview</CardTitle>
-          <CardDescription>
-            This is how your widget will appear to visitors
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="border rounded-lg p-8 bg-slate-50 flex items-center justify-center min-h-[300px]">
-            <div
-              className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
-              style={{ backgroundColor: widgetConfig.backgroundColor }}
-            >
-              <div className="p-6">
-                <h3
-                  className="text-xl font-bold mb-2"
-                  style={{ color: widgetConfig.textColor }}
+          <Card>
+            <CardHeader>
+              <CardTitle>Popup Preview</CardTitle>
+              <CardDescription>
+                This is how your popup widget will appear to visitors
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-lg p-8 bg-slate-50 flex items-center justify-center min-h-[300px]">
+                <div
+                  className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden"
+                  style={{ backgroundColor: widgetConfig.backgroundColor }}
                 >
-                  {widgetConfig.title}
-                </h3>
-                <p
-                  className="text-sm mb-4 opacity-80"
-                  style={{ color: widgetConfig.textColor }}
-                >
-                  {widgetConfig.description}
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-2 rounded-lg border text-sm"
-                    disabled
-                  />
-                  <button
-                    className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-                    style={{ backgroundColor: widgetConfig.primaryColor }}
-                    disabled
-                  >
-                    {widgetConfig.buttonText}
-                  </button>
+                  <div className="p-6">
+                    <h3
+                      className="text-xl font-bold mb-2"
+                      style={{ color: widgetConfig.textColor }}
+                    >
+                      {widgetConfig.title}
+                    </h3>
+                    <p
+                      className="text-sm mb-4 opacity-80"
+                      style={{ color: widgetConfig.textColor }}
+                    >
+                      {widgetConfig.description}
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="flex-1 px-4 py-2 rounded-lg border text-sm"
+                        disabled
+                      />
+                      <button
+                        className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                        style={{ backgroundColor: widgetConfig.primaryColor }}
+                        disabled
+                      >
+                        {widgetConfig.buttonText}
+                      </button>
+                    </div>
+                    {widgetConfig.showBranding && (
+                      <p className="text-xs text-center mt-4 opacity-50">
+                        Powered by Collecty
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {widgetConfig.showBranding && (
-                  <p className="text-xs text-center mt-4 opacity-50">
-                    Powered by Collecty
-                  </p>
-                )}
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Inline Form Tab */}
+        <TabsContent value="inline" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Install Inline Form</CardTitle>
+              <CardDescription>
+                Embed a form directly into your page - perfect for footers,
+                sidebars, or dedicated sections
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Tabs defaultValue="script" className="w-full">
+                <TabsList className="w-full">
+                  <TabsTrigger value="script" className="flex-1">
+                    Script Tag
+                  </TabsTrigger>
+                  <TabsTrigger value="html" className="flex-1">
+                    HTML Snippet
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="script" className="mt-4 space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Add this code where you want the form to appear. Best for
+                    dynamic sites with automatic style isolation.
+                  </p>
+                  <div className="relative">
+                    <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
+                      <code>{inlineScriptCode}</code>
+                    </pre>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="absolute top-2 right-2"
+                      onClick={handleCopyInline}
+                    >
+                      {copiedInline ? (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="html" className="mt-4 space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Get a self-contained HTML snippet with all styles included.
+                    Best for static sites or email builders.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(inlineHtmlUrl, "_blank")}
+                      className="flex items-center gap-2"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                      View HTML
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleCopyHtml}
+                      className="flex items-center gap-2"
+                    >
+                      {copiedHtml ? (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Copy HTML
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Inline Form Preview</CardTitle>
+              <CardDescription>
+                This is how your inline form will appear on your website
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-lg p-8 bg-slate-50">
+                <div
+                  className="mx-auto max-w-lg overflow-hidden"
+                  style={{
+                    backgroundColor: inlineWidgetConfig.backgroundColor,
+                    borderRadius: `${inlineWidgetConfig.borderRadius}px`,
+                    padding: "24px",
+                  }}
+                >
+                  <h3
+                    className="font-bold text-lg mb-1"
+                    style={{ color: inlineWidgetConfig.textColor }}
+                  >
+                    {inlineWidgetConfig.title}
+                  </h3>
+                  <p
+                    className="text-sm mb-4 opacity-70"
+                    style={{ color: inlineWidgetConfig.textColor }}
+                  >
+                    {inlineWidgetConfig.description}
+                  </p>
+                  <div
+                    className={`flex gap-3 ${
+                      inlineWidgetConfig.layout === "vertical"
+                        ? "flex-col"
+                        : "flex-row"
+                    }`}
+                  >
+                    <input
+                      type="email"
+                      placeholder={inlineWidgetConfig.placeholderText}
+                      className="flex-1 px-4 py-2.5 border-2 border-slate-200 text-sm"
+                      style={{
+                        borderRadius: `${inlineWidgetConfig.borderRadius}px`,
+                      }}
+                      disabled
+                    />
+                    <button
+                      className={`px-6 py-2.5 text-white text-sm font-semibold ${
+                        inlineWidgetConfig.layout === "vertical" ? "w-full" : ""
+                      }`}
+                      style={{
+                        backgroundColor: inlineWidgetConfig.primaryColor,
+                        borderRadius: `${inlineWidgetConfig.borderRadius}px`,
+                      }}
+                      disabled
+                    >
+                      {inlineWidgetConfig.buttonText}
+                    </button>
+                  </div>
+                  {inlineWidgetConfig.showBranding && (
+                    <p
+                      className="text-xs text-center mt-4 opacity-40"
+                      style={{ color: inlineWidgetConfig.textColor }}
+                    >
+                      Powered by Collecty
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-

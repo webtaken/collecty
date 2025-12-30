@@ -1,7 +1,13 @@
 import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { getProjectWithStats } from "@/actions/projects";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +16,13 @@ import { ProjectActions } from "@/components/features/projects/project-actions";
 import { SubscribersTable } from "@/components/features/projects/subscribers-table";
 import { ApiKeyManager } from "@/components/features/projects/api-key-manager";
 import { EmbedCodeGenerator } from "@/components/features/projects/embed-code-generator";
+import { defaultInlineWidgetConfig } from "@/db/schema/projects";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Lock } from "lucide-react";
 
 export default async function ProjectDetailPage({
   params,
@@ -30,7 +43,9 @@ export default async function ProjectDetailPage({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">{project.name}</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {project.name}
+            </h1>
             <Badge variant={project.isActive ? "default" : "secondary"}>
               {project.isActive ? "Active" : "Inactive"}
             </Badge>
@@ -111,7 +126,19 @@ export default async function ProjectDetailPage({
         <TabsList>
           <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
           <TabsTrigger value="embed">Embed Code</TabsTrigger>
-          <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <TabsTrigger value="api-keys" disabled>
+                  <Lock className="w-4 h-4 mr-2" />
+                  API Keys
+                </TabsTrigger>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Coming soon</p>
+            </TooltipContent>
+          </Tooltip>
         </TabsList>
 
         <TabsContent value="subscribers">
@@ -135,10 +162,13 @@ export default async function ProjectDetailPage({
           <EmbedCodeGenerator
             projectId={project.id}
             widgetConfig={project.widgetConfig}
+            inlineWidgetConfig={
+              project.inlineWidgetConfig ?? defaultInlineWidgetConfig
+            }
           />
         </TabsContent>
 
-        <TabsContent value="api-keys">
+        {/* <TabsContent value="api-keys">
           <Card>
             <CardHeader>
               <CardTitle>API Keys</CardTitle>
@@ -147,15 +177,11 @@ export default async function ProjectDetailPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ApiKeyManager
-                projectId={project.id}
-                apiKeys={project.apiKeys}
-              />
+              <ApiKeyManager projectId={project.id} apiKeys={project.apiKeys} />
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );
 }
-

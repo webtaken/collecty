@@ -435,13 +435,13 @@ export async function GET(
     closeBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      hideWidget();
+      hideWidget(false);
     });
 
     // Click outside to close
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        hideWidget();
+        hideWidget(false);
       }
     });
 
@@ -449,7 +449,7 @@ export async function GET(
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        hideWidget();
+        hideWidget(false);
       }
     });
 
@@ -488,7 +488,7 @@ export async function GET(
           messageEl.className = 'collecty-message success';
           messageEl.textContent = SUCCESS_MESSAGE;
           input.value = '';
-          setTimeout(() => hideWidget(), 3000);
+          setTimeout(() => hideWidget(true), 2000);
         } else {
           throw new Error(data.error || 'Something went wrong');
         }
@@ -522,7 +522,7 @@ export async function GET(
     }
   }
 
-  function hideWidget() {
+  function hideWidget(setCookie = true) {
     if (shadowRoot) {
       const overlay = shadowRoot.querySelector('.collecty-overlay');
       if (overlay) {
@@ -530,8 +530,10 @@ export async function GET(
         hostElement.style.pointerEvents = 'none';
         // Restore body scroll
         document.body.style.overflow = '';
-        // Set cookie to prevent showing again for 24 hours
-        document.cookie = 'collecty_shown=1;max-age=86400;path=/;SameSite=Lax';
+        if (setCookie) {
+          // Set cookie to prevent showing again for 24 hours
+          document.cookie = 'collecty_shown=1;max-age=86400;path=/;SameSite=Lax';
+        }
       }
     }
   }

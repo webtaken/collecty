@@ -1,11 +1,18 @@
 import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { getProjectWithStats } from "@/actions/projects";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProjectSettingsForm } from "@/components/features/projects/project-settings-form";
 import { WidgetCustomizer } from "@/components/features/projects/widget-customizer";
+import { defaultInlineWidgetConfig } from "@/db/schema/projects";
 
 export default async function ProjectSettingsPage({
   params,
@@ -41,13 +48,15 @@ export default async function ProjectSettingsPage({
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Project Settings</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Project Settings
+          </h1>
           <p className="text-slate-600">{project.name}</p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
@@ -61,18 +70,21 @@ export default async function ProjectSettingsPage({
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Widget Customization</CardTitle>
               <CardDescription>
-                Customize the appearance and behavior of your popup
+                Customize the appearance of your popup and inline widgets
               </CardDescription>
             </CardHeader>
             <CardContent>
               <WidgetCustomizer
                 projectId={project.id}
                 initialConfig={project.widgetConfig}
+                initialInlineConfig={
+                  project.inlineWidgetConfig ?? defaultInlineWidgetConfig
+                }
               />
             </CardContent>
           </Card>
@@ -81,4 +93,3 @@ export default async function ProjectSettingsPage({
     </div>
   );
 }
-

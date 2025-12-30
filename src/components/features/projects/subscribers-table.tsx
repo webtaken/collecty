@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -25,12 +26,23 @@ type SubscribersTableProps = {
   projectId: string;
 };
 
-export function SubscribersTable({ subscribers, projectId }: SubscribersTableProps) {
+export function SubscribersTable({
+  subscribers,
+  projectId,
+}: SubscribersTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filteredSubscribers = subscribers.filter((sub) =>
     sub.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleReload = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
 
   const handleExportCSV = () => {
     const headers = ["Email", "Source", "Subscribed At"];
@@ -48,7 +60,9 @@ export function SubscribersTable({ subscribers, projectId }: SubscribersTablePro
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `subscribers-${projectId}-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `subscribers-${projectId}-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -74,9 +88,51 @@ export function SubscribersTable({ subscribers, projectId }: SubscribersTablePro
           </svg>
         </div>
         <p className="text-slate-600 mb-1">No subscribers yet</p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 mb-4">
           Install the widget on your website to start collecting emails
         </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReload}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <>
+              <svg
+                className="w-4 h-4 mr-2 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Refreshing...
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Refresh
+            </>
+          )}
+        </Button>
       </div>
     );
   }
@@ -90,22 +146,45 @@ export function SubscribersTable({ subscribers, projectId }: SubscribersTablePro
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
-        <Button variant="outline" onClick={handleExportCSV}>
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleReload}
+            disabled={isPending}
+            title="Refresh subscribers"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          Export CSV
-        </Button>
+            <svg
+              className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </Button>
+          <Button variant="outline" onClick={handleExportCSV}>
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <div className="border rounded-lg">
@@ -120,7 +199,9 @@ export function SubscribersTable({ subscribers, projectId }: SubscribersTablePro
           <TableBody>
             {filteredSubscribers.map((subscriber) => (
               <TableRow key={subscriber.id}>
-                <TableCell className="font-medium">{subscriber.email}</TableCell>
+                <TableCell className="font-medium">
+                  {subscriber.email}
+                </TableCell>
                 <TableCell className="text-slate-500">
                   {subscriber.source || "widget"}
                 </TableCell>
@@ -139,4 +220,3 @@ export function SubscribersTable({ subscribers, projectId }: SubscribersTablePro
     </div>
   );
 }
-

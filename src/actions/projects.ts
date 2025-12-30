@@ -5,8 +5,16 @@ import { db, projects, subscribers, apiKeys } from "@/db";
 import { eq, and, desc, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createProjectSchema, updateProjectSchema } from "@/lib/validations/project";
-import { defaultWidgetConfig, type WidgetConfig } from "@/db/schema/projects";
+import {
+  createProjectSchema,
+  updateProjectSchema,
+} from "@/lib/validations/project";
+import {
+  defaultWidgetConfig,
+  defaultInlineWidgetConfig,
+  type WidgetConfig,
+  type InlineWidgetConfig,
+} from "@/db/schema/projects";
 import { nanoid } from "nanoid";
 import { createHash } from "crypto";
 
@@ -32,6 +40,7 @@ export async function createProjectAction(formData: FormData) {
       domain: validated.domain || null,
       description: validated.description || null,
       widgetConfig: defaultWidgetConfig,
+      inlineWidgetConfig: defaultInlineWidgetConfig,
     })
     .returning();
 
@@ -40,7 +49,10 @@ export async function createProjectAction(formData: FormData) {
   redirect(`/projects/${project.id}`);
 }
 
-export async function updateProjectAction(projectId: string, formData: FormData) {
+export async function updateProjectAction(
+  projectId: string,
+  formData: FormData
+) {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -61,13 +73,18 @@ export async function updateProjectAction(projectId: string, formData: FormData)
       domain: validated.domain || null,
       updatedAt: new Date(),
     })
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/projects");
 }
 
-export async function updateWidgetConfigAction(projectId: string, config: WidgetConfig) {
+export async function updateWidgetConfigAction(
+  projectId: string,
+  config: WidgetConfig
+) {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -79,7 +96,31 @@ export async function updateWidgetConfigAction(projectId: string, config: Widget
       widgetConfig: config,
       updatedAt: new Date(),
     })
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function updateInlineWidgetConfigAction(
+  projectId: string,
+  config: InlineWidgetConfig
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  await db
+    .update(projects)
+    .set({
+      inlineWidgetConfig: config,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   revalidatePath(`/projects/${projectId}`);
 }
@@ -93,7 +134,9 @@ export async function toggleProjectStatusAction(projectId: string) {
   const [project] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   if (!project) {
     throw new Error("Project not found");
@@ -120,7 +163,9 @@ export async function deleteProjectAction(projectId: string) {
 
   await db
     .delete(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   revalidatePath("/projects");
   revalidatePath("/dashboard");
@@ -137,7 +182,9 @@ export async function generateApiKeyAction(projectId: string, name: string) {
   const [project] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   if (!project) {
     throw new Error("Project not found");
@@ -171,7 +218,9 @@ export async function deleteApiKeyAction(keyId: string, projectId: string) {
   const [project] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)));
+    .where(
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+    );
 
   if (!project) {
     throw new Error("Project not found");
@@ -217,4 +266,3 @@ export async function getProjectWithStats(projectId: string, userId: string) {
     apiKeys: projectApiKeys,
   };
 }
-
