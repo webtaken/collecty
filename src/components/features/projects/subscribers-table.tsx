@@ -18,7 +18,15 @@ type Subscriber = {
   email: string;
   source: string | null;
   subscribedAt: Date;
-  metadata: Record<string, unknown> | null;
+  metadata: {
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    device?: { type?: string; vendor?: string; model?: string };
+    browser?: { name?: string; version?: string };
+    os?: { name?: string; version?: string };
+    [key: string]: unknown;
+  } | null;
 };
 
 type SubscribersTableProps = {
@@ -44,11 +52,45 @@ export function SubscribersTable({
     });
   };
 
+  const getLocation = (sub: Subscriber) => {
+    if (!sub.metadata?.city && !sub.metadata?.country) return "-";
+    const parts = [
+      sub.metadata?.city,
+      sub.metadata?.countryCode || sub.metadata?.country,
+    ].filter(Boolean);
+    return parts.join(", ") || "-";
+  };
+
+  const getDevice = (sub: Subscriber) => {
+    const type = sub.metadata?.device?.type || "desktop";
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  const getBrowser = (sub: Subscriber) => {
+    return sub.metadata?.browser?.name || "-";
+  };
+
+  const getOS = (sub: Subscriber) => {
+    return sub.metadata?.os?.name || "-";
+  };
+
   const handleExportCSV = () => {
-    const headers = ["Email", "Source", "Subscribed At"];
+    const headers = [
+      "Email",
+      "Source",
+      "Location",
+      "Device",
+      "Browser",
+      "OS",
+      "Subscribed At",
+    ];
     const rows = filteredSubscribers.map((sub) => [
       sub.email,
       sub.source || "widget",
+      getLocation(sub),
+      getDevice(sub),
+      getBrowser(sub),
+      getOS(sub),
       new Date(sub.subscribedAt).toISOString(),
     ]);
 
@@ -187,12 +229,15 @@ export function SubscribersTable({
         </div>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
-              <TableHead>Source</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Device</TableHead>
+              <TableHead>Browser</TableHead>
+              <TableHead>OS</TableHead>
               <TableHead>Date</TableHead>
             </TableRow>
           </TableHeader>
@@ -203,7 +248,16 @@ export function SubscribersTable({
                   {subscriber.email}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {subscriber.source || "widget"}
+                  {getLocation(subscriber)}
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  {getDevice(subscriber)}
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  {getBrowser(subscriber)}
+                </TableCell>
+                <TableCell className="text-slate-500">
+                  {getOS(subscriber)}
                 </TableCell>
                 <TableCell className="text-slate-500">
                   {new Date(subscriber.subscribedAt).toLocaleDateString()}

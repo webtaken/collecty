@@ -3,15 +3,27 @@ import { db, subscribers, projects, apiKeys } from "@/db";
 import { eq, and } from "drizzle-orm";
 import { createHash } from "crypto";
 import { z } from "zod";
+import { UAParser } from "ua-parser-js";
+import type { SubscriberMetadata } from "@/db/schema/subscribers";
 
 const subscribeSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  projectId: z.string().uuid("Invalid project ID"),
+  email: z.email("Invalid email address"),
+  projectId: z.uuid("Invalid project ID"),
   metadata: z
     .object({
       userAgent: z.string().optional(),
       referrer: z.string().optional(),
       pageUrl: z.string().optional(),
+      // Geolocation fields (from client-side ipapi.co call)
+      ip: z.string().optional(),
+      city: z.string().optional(),
+      region: z.string().optional(),
+      country: z.string().optional(),
+      countryCode: z.string().optional(),
+      timezone: z.string().optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+      org: z.string().optional(),
     })
     .optional(),
 });
@@ -114,7 +126,32 @@ export async function POST(request: NextRequest) {
         .where(eq(apiKeys.id, validKey.id));
     }
 
-    // Check for duplicate email in this project
+    // Parse User-Agent header server-side for trusted device/browser/OS info
+    const userAgentHeader = request.headers.get("user-agent") || "";
+    const parser = new UAParser(userAgentHeader);
+    const uaResult = parser.getResult();
+
+    // Build enriched metadata
+    const enrichedMetadata: SubscriberMetadata = {
+      ...validated.metadata,
+      userAgent: userAgentHeader,
+      // Parsed User-Agent data (server-side, trusted)
+      device: {
+        type: uaResult.device.type || "desktop",
+        vendor: uaResult.device.vendor,
+        model: uaResult.device.model,
+      },
+      browser: {
+        name: uaResult.browser.name,
+        version: uaResult.browser.version,
+      },
+      os: {
+        name: uaResult.os.name,
+        version: uaResult.os.version,
+      },
+    };
+
+    // Check for existing subscriber in this project
     const [existingSubscriber] = await db
       .select()
       .from(subscribers)
@@ -126,8 +163,14 @@ export async function POST(request: NextRequest) {
       );
 
     if (existingSubscriber) {
+      // Upsert: Update existing subscriber with new metadata
+      await db
+        .update(subscribers)
+        .set({ metadata: enrichedMetadata })
+        .where(eq(subscribers.id, existingSubscriber.id));
+
       return jsonResponse(
-        { success: true, message: "Already subscribed" },
+        { success: true, message: "Subscription updated!" },
         200
       );
     }
@@ -136,7 +179,7 @@ export async function POST(request: NextRequest) {
     await db.insert(subscribers).values({
       projectId: validated.projectId,
       email: validated.email.toLowerCase(),
-      metadata: validated.metadata || {},
+      metadata: enrichedMetadata,
       source: "widget",
     });
 

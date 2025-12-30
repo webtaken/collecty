@@ -347,19 +347,41 @@ export async function GET(
       messageEl.className = 'collecty-message';
       messageEl.textContent = '';
       
-      fetch('${escapeJs(appUrl)}/api/v1/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          projectId: '${escapeJs(projectId)}',
-          metadata: {
-            userAgent: navigator.userAgent,
-            referrer: document.referrer,
-            pageUrl: window.location.href,
-            source: 'inline-html'
-          }
-        })
+      // Fetch geolocation data from ipapi.co (client-side to avoid rate limits)
+      var geoPromise = fetch('https://ipapi.co/json/')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .catch(function() { return null; });
+      
+      geoPromise.then(function(geoData) {
+        var metadata = {
+          userAgent: navigator.userAgent,
+          referrer: document.referrer,
+          pageUrl: window.location.href,
+          source: 'inline-html'
+        };
+        
+        // Add geolocation data if available
+        if (geoData) {
+          metadata.ip = geoData.ip;
+          metadata.city = geoData.city;
+          metadata.region = geoData.region;
+          metadata.country = geoData.country_name;
+          metadata.countryCode = geoData.country_code;
+          metadata.timezone = geoData.timezone;
+          metadata.latitude = geoData.latitude;
+          metadata.longitude = geoData.longitude;
+          metadata.org = geoData.org;
+        }
+        
+        return fetch('${escapeJs(appUrl)}/api/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            projectId: '${escapeJs(projectId)}',
+            metadata: metadata
+          })
+        });
       })
       .then(function(response) {
         return response.json().then(function(data) {

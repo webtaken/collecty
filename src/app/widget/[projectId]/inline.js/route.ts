@@ -371,18 +371,45 @@ export async function GET(
       messageEl.textContent = '';
 
       try {
+        // Fetch geolocation data from ipapi.co (client-side to avoid rate limits)
+        let geoData = null;
+        try {
+          const geoRes = await fetch('https://ipapi.co/json/');
+          if (geoRes.ok) {
+            geoData = await geoRes.json();
+          }
+        } catch (geoErr) {
+          // Geolocation fetch failed, continue without it
+        }
+
+        // Build metadata object
+        const metadata = {
+          userAgent: navigator.userAgent,
+          referrer: document.referrer,
+          pageUrl: window.location.href,
+          source: 'inline-widget'
+        };
+
+        // Add geolocation data if available
+        if (geoData) {
+          metadata.ip = geoData.ip;
+          metadata.city = geoData.city;
+          metadata.region = geoData.region;
+          metadata.country = geoData.country_name;
+          metadata.countryCode = geoData.country_code;
+          metadata.timezone = geoData.timezone;
+          metadata.latitude = geoData.latitude;
+          metadata.longitude = geoData.longitude;
+          metadata.org = geoData.org;
+        }
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
             projectId: PROJECT_ID,
-            metadata: {
-              userAgent: navigator.userAgent,
-              referrer: document.referrer,
-              pageUrl: window.location.href,
-              source: 'inline-widget'
-            },
+            metadata: metadata,
           }),
         });
 
