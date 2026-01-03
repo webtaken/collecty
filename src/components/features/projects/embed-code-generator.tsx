@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { WidgetConfig, InlineWidgetConfig } from "@/db/schema/projects";
+import { frameworks, getFrameworkById, type FrameworkId } from "@/lib/frameworks/install-code-generator";
+import { cn } from "@/lib/utils";
 
 type EmbedCodeGeneratorProps = {
   projectId: string;
@@ -26,6 +28,12 @@ export function EmbedCodeGenerator({
   const [copiedPopup, setCopiedPopup] = useState(false);
   const [copiedInline, setCopiedInline] = useState(false);
   const [copiedHtml, setCopiedHtml] = useState(false);
+  
+  // Framework state
+  const [selectedPopupFramework, setSelectedPopupFramework] = useState<FrameworkId | null>(null);
+  const [copiedPopupFramework, setCopiedPopupFramework] = useState(false);
+  const [selectedInlineFramework, setSelectedInlineFramework] = useState<FrameworkId | null>(null);
+  const [copiedInlineFramework, setCopiedInlineFramework] = useState(false);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://collecty.app";
 
@@ -67,6 +75,27 @@ export function EmbedCodeGenerator({
       window.open(inlineHtmlUrl, "_blank");
     }
   };
+
+  const handleCopyFramework = async (text: string, type: "popup" | "inline") => {
+    await navigator.clipboard.writeText(text);
+    if (type === "popup") {
+      setCopiedPopupFramework(true);
+      setTimeout(() => setCopiedPopupFramework(false), 2000);
+    } else {
+      setCopiedInlineFramework(true);
+      setTimeout(() => setCopiedInlineFramework(false), 2000);
+    }
+  };
+
+  const selectedPopupFrameworkData = selectedPopupFramework ? getFrameworkById(selectedPopupFramework) : null;
+  const popupFrameworkCode = selectedPopupFrameworkData
+    ? selectedPopupFrameworkData.generateCode(projectId, "popup", appUrl)
+    : "";
+
+  const selectedInlineFrameworkData = selectedInlineFramework ? getFrameworkById(selectedInlineFramework) : null;
+  const inlineFrameworkCode = selectedInlineFrameworkData
+    ? selectedInlineFrameworkData.generateCode(projectId, "inline", appUrl)
+    : "";
 
   return (
     <div className="space-y-6">
@@ -118,68 +147,205 @@ export function EmbedCodeGenerator({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="relative">
-                <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                  <code>{popupScriptCode}</code>
-                </pre>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="absolute top-2 right-2"
-                  onClick={handleCopyPopup}
-                >
-                  {copiedPopup ? (
-                    <>
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                      Copy
-                    </>
-                  )}
-                </Button>
-              </div>
+              <Tabs defaultValue="script" className="w-full">
+                <TabsList className="w-full">
+                  <TabsTrigger value="script" className="flex-1">
+                    Script Tag
+                  </TabsTrigger>
+                  <TabsTrigger value="frameworks" className="flex-1">
+                    Frameworks
+                  </TabsTrigger>
+                </TabsList>
 
-              <div className="text-sm text-slate-600 space-y-2">
-                <p>
-                  <strong>Installation:</strong> Paste this code before the
-                  closing{" "}
-                  <code className="bg-slate-100 px-1 py-0.5 rounded">
-                    &lt;/body&gt;
-                  </code>{" "}
-                  tag on your website.
-                </p>
-                <p>
-                  <strong>Note:</strong> The widget will automatically appear
-                  based on your configured trigger settings.
-                </p>
-              </div>
+                <TabsContent value="script" className="mt-4 space-y-4">
+                  <div className="relative">
+                    <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
+                      <code>{popupScriptCode}</code>
+                    </pre>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="absolute top-2 right-2"
+                      onClick={handleCopyPopup}
+                    >
+                      {copiedPopup ? (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="text-sm text-slate-600 space-y-2">
+                    <p>
+                      <strong>Installation:</strong> Paste this code before the
+                      closing{" "}
+                      <code className="bg-slate-100 px-1 py-0.5 rounded">
+                        &lt;/body&gt;
+                      </code>{" "}
+                      tag on your website.
+                    </p>
+                    <p>
+                      <strong>Note:</strong> The widget will automatically appear
+                      based on your configured trigger settings.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="frameworks" className="mt-4 space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Select your framework to see framework-specific installation instructions.
+                  </p>
+                  
+                  {!selectedPopupFramework ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {frameworks.map((framework) => {
+                        const Icon = framework.icon;
+                        return (
+                          <button
+                            key={framework.id}
+                            onClick={() => setSelectedPopupFramework(framework.id)}
+                            className={cn(
+                              "flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all",
+                              "hover:border-indigo-300 hover:bg-indigo-50",
+                              "border-slate-200 bg-white"
+                            )}
+                          >
+                            <Icon className="size-5" />
+                            <span className="text-xs font-medium text-slate-700 text-center">
+                              {framework.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setSelectedPopupFramework(null)}
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                              />
+                            </svg>
+                          </button>
+                          <div className="flex items-center gap-2">
+                            {selectedPopupFrameworkData && (
+                              <>
+                                <selectedPopupFrameworkData.icon className="size-5" />
+                                <div>
+                                  <h5 className="text-sm font-medium text-slate-900">
+                                    {selectedPopupFrameworkData.name}
+                                  </h5>
+                                  <p className="text-xs text-slate-500">
+                                    {selectedPopupFrameworkData.fileLocation}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
+                          <code>{popupFrameworkCode}</code>
+                        </pre>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleCopyFramework(popupFrameworkCode, "popup")}
+                        >
+                          {copiedPopupFramework ? (
+                            <span className="flex items-center gap-1.5">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Copied!
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                />
+                              </svg>
+                              Copy
+                            </span>
+                          )}
+                        </Button>
+                      </div>
+
+                      {selectedPopupFrameworkData && (
+                        <p className="text-xs text-slate-500">
+                          {selectedPopupFrameworkData.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
@@ -254,6 +420,9 @@ export function EmbedCodeGenerator({
                   </TabsTrigger>
                   <TabsTrigger value="html" className="flex-1">
                     HTML Snippet
+                  </TabsTrigger>
+                  <TabsTrigger value="frameworks" className="flex-1">
+                    Frameworks
                   </TabsTrigger>
                 </TabsList>
 
@@ -379,6 +548,130 @@ export function EmbedCodeGenerator({
                       )}
                     </Button>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="frameworks" className="mt-4 space-y-4">
+                  <p className="text-sm text-slate-600">
+                    Select your framework to see framework-specific installation instructions.
+                  </p>
+                  
+                  {!selectedInlineFramework ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {frameworks.map((framework) => {
+                        const Icon = framework.icon;
+                        return (
+                          <button
+                            key={framework.id}
+                            onClick={() => setSelectedInlineFramework(framework.id)}
+                            className={cn(
+                              "flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all",
+                              "hover:border-indigo-300 hover:bg-indigo-50",
+                              "border-slate-200 bg-white"
+                            )}
+                          >
+                            <Icon className="size-5" />
+                            <span className="text-xs font-medium text-slate-700 text-center">
+                              {framework.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setSelectedInlineFramework(null)}
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                              />
+                            </svg>
+                          </button>
+                          <div className="flex items-center gap-2">
+                            {selectedInlineFrameworkData && (
+                              <>
+                                <selectedInlineFrameworkData.icon className="size-5" />
+                                <div>
+                                  <h5 className="text-sm font-medium text-slate-900">
+                                    {selectedInlineFrameworkData.name}
+                                  </h5>
+                                  <p className="text-xs text-slate-500">
+                                    {selectedInlineFrameworkData.fileLocation}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
+                          <code>{inlineFrameworkCode}</code>
+                        </pre>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleCopyFramework(inlineFrameworkCode, "inline")}
+                        >
+                          {copiedInlineFramework ? (
+                            <span className="flex items-center gap-1.5">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Copied!
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                />
+                              </svg>
+                              Copy
+                            </span>
+                          )}
+                        </Button>
+                      </div>
+
+                      {selectedInlineFrameworkData && (
+                        <p className="text-xs text-slate-500">
+                          {selectedInlineFrameworkData.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
