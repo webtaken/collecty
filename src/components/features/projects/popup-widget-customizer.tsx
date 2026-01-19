@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { updateWidgetConfigAction } from "@/actions/projects";
+import { publishGuideEvent } from "@/lib/guide-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,21 +19,33 @@ import type { WidgetConfig } from "@/db/schema/projects";
 type PopupWidgetCustomizerProps = {
   projectId: string;
   initialConfig: WidgetConfig;
+  onConfigChange?: (config: WidgetConfig) => void;
+  showPreview?: boolean;
 };
 
 export function PopupWidgetCustomizer({
   projectId,
   initialConfig,
+  onConfigChange,
+  showPreview = true,
 }: PopupWidgetCustomizerProps) {
   const [config, setConfig] = useState<WidgetConfig>(initialConfig);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    setConfig(initialConfig);
+  }, [initialConfig]);
+
   const handleChange = <K extends keyof WidgetConfig>(
     key: K,
     value: WidgetConfig[K]
   ) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+    setConfig((prev) => {
+      const next = { ...prev, [key]: value };
+      onConfigChange?.(next);
+      return next;
+    });
     setSaved(false);
   };
 
@@ -40,12 +53,13 @@ export function PopupWidgetCustomizer({
     startTransition(async () => {
       await updateWidgetConfigAction(projectId, config);
       setSaved(true);
+      publishGuideEvent("guide:customizedWidget");
       setTimeout(() => setSaved(false), 2000);
     });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-guide-target="widget-customizer">
       {/* Content */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-slate-900">Content</h4>
@@ -205,66 +219,67 @@ export function PopupWidgetCustomizer({
 
         {(config.triggerType === "delay" ||
           config.triggerType === "scroll") && (
-          <div className="space-y-2">
-            <Label htmlFor="popup-triggerValue">
-              {config.triggerType === "delay"
-                ? "Delay (seconds)"
-                : "Scroll Percentage"}
-            </Label>
-            <Input
-              id="popup-triggerValue"
-              type="number"
-              min={0}
-              max={config.triggerType === "scroll" ? 100 : undefined}
-              value={config.triggerValue}
-              onChange={(e) =>
-                handleChange("triggerValue", parseInt(e.target.value) || 0)
-              }
-            />
-          </div>
-        )}
+            <div className="space-y-2">
+              <Label htmlFor="popup-triggerValue">
+                {config.triggerType === "delay"
+                  ? "Delay (seconds)"
+                  : "Scroll Percentage"}
+              </Label>
+              <Input
+                id="popup-triggerValue"
+                type="number"
+                min={0}
+                max={config.triggerType === "scroll" ? 100 : undefined}
+                value={config.triggerValue}
+                onChange={(e) =>
+                  handleChange("triggerValue", parseInt(e.target.value) || 0)
+                }
+              />
+            </div>
+          )}
       </div>
 
-      {/* Preview */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Preview</h4>
-        <div className="border rounded-lg p-4 bg-slate-50">
-          <div
-            className="mx-auto max-w-sm rounded-lg shadow-lg overflow-hidden"
-            style={{ backgroundColor: config.backgroundColor }}
-          >
-            <div className="p-4">
-              <h3
-                className="font-bold mb-1"
-                style={{ color: config.textColor }}
-              >
-                {config.title}
-              </h3>
-              <p
-                className="text-sm mb-3 opacity-80"
-                style={{ color: config.textColor }}
-              >
-                {config.description}
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="email@example.com"
-                  className="flex-1 px-3 py-1.5 rounded border text-sm"
-                  disabled
-                />
-                <button
-                  className="px-3 py-1.5 rounded text-white text-sm font-medium"
-                  style={{ backgroundColor: config.primaryColor }}
-                  disabled
+      {showPreview && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-slate-900">Preview</h4>
+          <div className="border rounded-lg p-4 bg-slate-50">
+            <div
+              className="mx-auto max-w-sm rounded-lg shadow-lg overflow-hidden"
+              style={{ backgroundColor: config.backgroundColor }}
+            >
+              <div className="p-4">
+                <h3
+                  className="font-bold mb-1"
+                  style={{ color: config.textColor }}
                 >
-                  {config.buttonText}
-                </button>
+                  {config.title}
+                </h3>
+                <p
+                  className="text-sm mb-3 opacity-80"
+                  style={{ color: config.textColor }}
+                >
+                  {config.description}
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="email@example.com"
+                    className="flex-1 px-3 py-1.5 rounded border text-sm"
+                    disabled
+                  />
+                  <button
+                    className="px-3 py-1.5 rounded text-white text-sm font-medium"
+                    style={{ backgroundColor: config.primaryColor }}
+                    disabled
+                  >
+                    {config.buttonText}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Button onClick={handleSave} disabled={isPending} className="w-full">
         {isPending ? "Saving..." : saved ? "Saved!" : "Save Widget Settings"}

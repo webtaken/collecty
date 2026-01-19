@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { updateInlineWidgetConfigAction } from "@/actions/projects";
+import { publishGuideEvent } from "@/lib/guide-events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,21 +19,33 @@ import type { InlineWidgetConfig } from "@/db/schema/projects";
 type InlineWidgetCustomizerProps = {
   projectId: string;
   initialConfig: InlineWidgetConfig;
+  onConfigChange?: (config: InlineWidgetConfig) => void;
+  showPreview?: boolean;
 };
 
 export function InlineWidgetCustomizer({
   projectId,
   initialConfig,
+  onConfigChange,
+  showPreview = true,
 }: InlineWidgetCustomizerProps) {
   const [config, setConfig] = useState<InlineWidgetConfig>(initialConfig);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    setConfig(initialConfig);
+  }, [initialConfig]);
+
   const handleChange = <K extends keyof InlineWidgetConfig>(
     key: K,
     value: InlineWidgetConfig[K]
   ) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+    setConfig((prev) => {
+      const next = { ...prev, [key]: value };
+      onConfigChange?.(next);
+      return next;
+    });
     setSaved(false);
   };
 
@@ -40,12 +53,13 @@ export function InlineWidgetCustomizer({
     startTransition(async () => {
       await updateInlineWidgetConfigAction(projectId, config);
       setSaved(true);
+      publishGuideEvent("guide:customizedWidget");
       setTimeout(() => setSaved(false), 2000);
     });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-guide-target="widget-customizer">
       {/* Content */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-slate-900">Content</h4>
@@ -205,58 +219,57 @@ export function InlineWidgetCustomizer({
         </div>
       </div>
 
-      {/* Preview */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-slate-900">Preview</h4>
-        <div className="border rounded-lg p-4 bg-slate-50">
-          <div
-            className="mx-auto max-w-lg overflow-hidden"
-            style={{
-              backgroundColor: config.backgroundColor,
-              borderRadius: `${config.borderRadius}px`,
-              padding: "24px",
-            }}
-          >
-            <h3
-              className="font-bold text-lg mb-1"
-              style={{ color: config.textColor }}
-            >
-              {config.title}
-            </h3>
-            <p
-              className="text-sm mb-4 opacity-70"
-              style={{ color: config.textColor }}
-            >
-              {config.description}
-            </p>
+      {showPreview && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-slate-900">Preview</h4>
+          <div className="border rounded-lg p-4 bg-slate-50">
             <div
-              className={`flex gap-3 ${
-                config.layout === "vertical" ? "flex-col" : "flex-row"
-              }`}
+              className="mx-auto max-w-lg overflow-hidden"
+              style={{
+                backgroundColor: config.backgroundColor,
+                borderRadius: `${config.borderRadius}px`,
+                padding: "24px",
+              }}
             >
-              <input
-                type="email"
-                placeholder={config.placeholderText}
-                className="flex-1 px-4 py-2.5 border-2 border-slate-200 text-sm"
-                style={{ borderRadius: `${config.borderRadius}px` }}
-                disabled
-              />
-              <button
-                className={`px-6 py-2.5 text-white text-sm font-semibold ${
-                  config.layout === "vertical" ? "w-full" : ""
-                }`}
-                style={{
-                  backgroundColor: config.primaryColor,
-                  borderRadius: `${config.borderRadius}px`,
-                }}
-                disabled
+              <h3
+                className="font-bold text-lg mb-1"
+                style={{ color: config.textColor }}
               >
-                {config.buttonText}
-              </button>
+                {config.title}
+              </h3>
+              <p
+                className="text-sm mb-4 opacity-70"
+                style={{ color: config.textColor }}
+              >
+                {config.description}
+              </p>
+              <div
+                className={`flex gap-3 ${config.layout === "vertical" ? "flex-col" : "flex-row"
+                  }`}
+              >
+                <input
+                  type="email"
+                  placeholder={config.placeholderText}
+                  className="flex-1 px-4 py-2.5 border-2 border-slate-200 text-sm"
+                  style={{ borderRadius: `${config.borderRadius}px` }}
+                  disabled
+                />
+                <button
+                  className={`px-6 py-2.5 text-white text-sm font-semibold ${config.layout === "vertical" ? "w-full" : ""
+                    }`}
+                  style={{
+                    backgroundColor: config.primaryColor,
+                    borderRadius: `${config.borderRadius}px`,
+                  }}
+                  disabled
+                >
+                  {config.buttonText}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Button onClick={handleSave} disabled={isPending} className="w-full">
         {isPending ? "Saving..." : saved ? "Saved!" : "Save Widget Settings"}

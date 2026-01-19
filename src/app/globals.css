@@ -134,3 +134,56 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Guide highlight styles */
+@keyframes clt-blink {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.15); }
+}
+
+.clt-highlight {
+  position: relative;
+  z-index: 50;
+  background-color: var(--card); /* Ensure background is opaque */
+  outline: 2px solid rgba(99, 102, 241, 0.7);
+  outline-offset: 2px;
+  border-radius: 8px;
+  animation: clt-blink 1.25s ease-in-out infinite;
+  transition: all 0.2s ease;
+  pointer-events: auto; /* Ensure clickable */
+}
+
+.clt-floating-panel {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+}
+
+.clt-floating-toggle {
+  position: fixed;
+  right: 1rem;
+  top: 5rem; /* below sticky header (h-16 ~ 4rem) */
+  z-index: 60;
+}
+
+/* Guide CTA emphasis */
+@keyframes clt-pulse-glow {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 10px 16px -8px rgba(79, 70, 229, 0.35), 0 0 0 0 rgba(99, 102, 241, 0.35);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 14px 22px -10px rgba(79, 70, 229, 0.45), 0 0 0 8px rgba(99, 102, 241, 0.12);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 10px 16px -8px rgba(79, 70, 229, 0.35), 0 0 0 0 rgba(99, 102, 241, 0.0);
+  }
+}
+
+.clt-guide-cta {
+  border-radius: 9999px;
+  animation: clt-pulse-glow 2.2s ease-in-out infinite;
+}

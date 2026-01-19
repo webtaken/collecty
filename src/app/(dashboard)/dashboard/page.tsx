@@ -4,6 +4,7 @@ import { eq, count, desc } from "drizzle-orm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { DashboardGuideBridge } from "@/components/features/guide/guide-bridge";
 
 async function getDashboardStats(userId: string) {
   const userProjects = await db
@@ -70,6 +71,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <DashboardGuideBridge totalProjects={stats.totalProjects} totalSubscribers={stats.totalSubscribers} />
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
         <p className="text-slate-600 mt-1">

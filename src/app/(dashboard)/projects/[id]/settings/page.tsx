@@ -11,8 +11,6 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProjectSettingsForm } from "@/components/features/projects/project-settings-form";
-import { WidgetCustomizer } from "@/components/features/projects/widget-customizer";
-import { defaultInlineWidgetConfig } from "@/db/schema/projects";
 
 export default async function ProjectSettingsPage({
   params,
@@ -55,41 +53,17 @@ export default async function ProjectSettingsPage({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>
-                Update your project details and configuration
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProjectSettingsForm project={project} />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Widget Customization</CardTitle>
-              <CardDescription>
-                Customize the appearance of your popup and inline widgets
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <WidgetCustomizer
-                projectId={project.id}
-                initialConfig={project.widgetConfig}
-                initialInlineConfig={
-                  project.inlineWidgetConfig ?? defaultInlineWidgetConfig
-                }
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>General Settings</CardTitle>
+          <CardDescription>
+            Update your project details and configuration
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProjectSettingsForm project={project} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

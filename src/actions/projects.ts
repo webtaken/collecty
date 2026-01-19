@@ -43,10 +43,40 @@ export async function createProjectAction(formData: FormData) {
       inlineWidgetConfig: defaultInlineWidgetConfig,
     })
     .returning();
-
   revalidatePath("/projects");
   revalidatePath("/dashboard");
   redirect(`/projects/${project.id}`);
+}
+
+export async function createProjectInlineAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const rawData = {
+    name: formData.get("name") as string,
+    domain: formData.get("domain") as string,
+    description: formData.get("description") as string,
+  };
+
+  const validated = createProjectSchema.parse(rawData);
+
+  const [project] = await db
+    .insert(projects)
+    .values({
+      userId: session.user.id,
+      name: validated.name,
+      domain: validated.domain || null,
+      description: validated.description || null,
+      widgetConfig: defaultWidgetConfig,
+      inlineWidgetConfig: defaultInlineWidgetConfig,
+    })
+    .returning();
+
+  revalidatePath("/projects");
+  revalidatePath("/dashboard");
+  return { projectId: project.id };
 }
 
 export async function updateProjectAction(

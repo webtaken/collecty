@@ -165,7 +165,7 @@ export function WidgetInstallCode({
             <p className="text-sm text-slate-600">
               Select your framework to see framework-specific installation instructions.
             </p>
-            
+
             {!selectedFramework ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {frameworks.map((framework) => {
@@ -453,7 +453,7 @@ export function WidgetInstallCode({
           <p className="text-sm text-slate-600">
             Select your framework to see framework-specific installation instructions.
           </p>
-          
+
           {!selectedFramework ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {frameworks.map((framework) => {
@@ -477,7 +477,7 @@ export function WidgetInstallCode({
               })}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4" data-guide-target="install-code">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
@@ -501,7 +501,7 @@ export function WidgetInstallCode({
                   <div className="flex items-center gap-2">
                     {selectedFrameworkData && (
                       <>
-                        <selectedFrameworkData.icon  className="text-slate-700" />
+                        <selectedFrameworkData.icon className="text-slate-700" />
                         <div>
                           <h5 className="text-sm font-medium text-slate-900">
                             {selectedFrameworkData.name}
