@@ -30,12 +30,21 @@ export type Framework = {
   id: FrameworkId;
   name: string;
   icon: ComponentType<{ className?: string }>;
-  generateCode: (projectId: string, widgetType: WidgetType, appUrl: string) => string;
+  generateCode: (
+    projectId: string,
+    widgetType: WidgetType,
+    appUrl: string,
+  ) => string;
   fileLocation: string;
   description: string;
+  language: string;
 };
 
-const generateNextJsCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateNextJsCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// app/layout.tsx or app/_document.tsx
 import Script from 'next/script';
@@ -85,7 +94,11 @@ export default function CollectyForm() {
   }
 };
 
-const generateReactCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateReactCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// public/index.html (before closing </body> tag)
 <script>
@@ -130,7 +143,11 @@ export function CollectyForm() {
   }
 };
 
-const generateVueCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateVueCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// main.js or App.vue
 import { createApp } from 'vue';
@@ -184,7 +201,11 @@ onUnmounted(() => {
   }
 };
 
-const generateSvelteCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateSvelteCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// app.html (before closing </body> tag)
 <script>
@@ -231,7 +252,11 @@ const generateSvelteCode = (projectId: string, widgetType: WidgetType, appUrl: s
   }
 };
 
-const generateAstroCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateAstroCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// src/layouts/Layout.astro
 ---
@@ -264,7 +289,11 @@ const generateAstroCode = (projectId: string, widgetType: WidgetType, appUrl: st
   }
 };
 
-const generateAngularCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateAngularCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// src/index.html (before closing </body> tag)
 <script>
@@ -318,7 +347,11 @@ export class CollectyFormComponent implements OnInit, OnDestroy {
   }
 };
 
-const generateRemixCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateRemixCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// app/root.tsx
 import type { MetaFunction } from "@remix-run/node";
@@ -367,7 +400,11 @@ export default function CollectyForm() {
   }
 };
 
-const generateNuxtCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateNuxtCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// nuxt.config.ts
 export default defineNuxtConfig({
@@ -423,7 +460,11 @@ onUnmounted(() => {
   }
 };
 
-const generateLaravelCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateLaravelCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `// resources/views/layouts/app.blade.php
 <!DOCTYPE html>
@@ -455,7 +496,11 @@ const generateLaravelCode = (projectId: string, widgetType: WidgetType, appUrl: 
   }
 };
 
-const generateVanillaCode = (projectId: string, widgetType: WidgetType, appUrl: string): string => {
+const generateVanillaCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
   if (widgetType === "popup") {
     return `<!-- Before closing </body> tag -->
 <script>
@@ -480,6 +525,7 @@ export const frameworks: Framework[] = [
     generateCode: generateNextJsCode,
     fileLocation: "app/layout.tsx or app/_document.tsx",
     description: "Next.js App Router or Pages Router",
+    language: "tsx",
   },
   {
     id: "react",
@@ -488,6 +534,7 @@ export const frameworks: Framework[] = [
     generateCode: generateReactCode,
     fileLocation: "public/index.html or component",
     description: "Create React App or custom setup",
+    language: "tsx",
   },
   {
     id: "vue",
@@ -496,6 +543,7 @@ export const frameworks: Framework[] = [
     generateCode: generateVueCode,
     fileLocation: "main.js or component",
     description: "Vue 3 with Composition API",
+    language: "javascript",
   },
   {
     id: "svelte",
@@ -504,6 +552,7 @@ export const frameworks: Framework[] = [
     generateCode: generateSvelteCode,
     fileLocation: "app.html or component",
     description: "Svelte or SvelteKit",
+    language: "html",
   },
   {
     id: "astro",
@@ -512,6 +561,7 @@ export const frameworks: Framework[] = [
     generateCode: generateAstroCode,
     fileLocation: "src/layouts/Layout.astro",
     description: "Astro framework",
+    language: "tsx",
   },
   {
     id: "angular",
@@ -520,6 +570,7 @@ export const frameworks: Framework[] = [
     generateCode: generateAngularCode,
     fileLocation: "src/index.html or component",
     description: "Angular framework",
+    language: "typescript",
   },
   {
     id: "remix",
@@ -528,6 +579,7 @@ export const frameworks: Framework[] = [
     generateCode: generateRemixCode,
     fileLocation: "app/root.tsx",
     description: "Remix framework",
+    language: "tsx",
   },
   {
     id: "nuxt",
@@ -536,6 +588,7 @@ export const frameworks: Framework[] = [
     generateCode: generateNuxtCode,
     fileLocation: "nuxt.config.ts or plugin",
     description: "Nuxt 3",
+    language: "javascript",
   },
   {
     id: "laravel",
@@ -544,6 +597,7 @@ export const frameworks: Framework[] = [
     generateCode: generateLaravelCode,
     fileLocation: "resources/views/layouts/app.blade.php",
     description: "Laravel Blade templates",
+    language: "php",
   },
   {
     id: "vanilla",
@@ -552,6 +606,7 @@ export const frameworks: Framework[] = [
     generateCode: generateVanillaCode,
     fileLocation: "HTML file",
     description: "Plain HTML, JavaScript, or any other framework",
+    language: "html",
   },
 ];
 
@@ -563,7 +618,7 @@ export function generateInstallCode(
   frameworkId: FrameworkId,
   projectId: string,
   widgetType: WidgetType,
-  appUrl: string
+  appUrl: string,
 ): string {
   const framework = getFrameworkById(frameworkId);
   if (!framework) {
@@ -571,4 +626,3 @@ export function generateInstallCode(
   }
   return framework.generateCode(projectId, widgetType, appUrl);
 }
-

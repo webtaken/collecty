@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { JSX } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   Card,
   CardContent,
@@ -12,7 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { WidgetConfig, InlineWidgetConfig } from "@/db/schema/projects";
-import { frameworks, getFrameworkById, type FrameworkId } from "@/lib/frameworks/install-code-generator";
+import {
+  frameworks,
+  getFrameworkById,
+  type FrameworkId,
+} from "@/lib/frameworks/install-code-generator";
 import { cn } from "@/lib/utils";
 import { publishGuideEvent } from "@/lib/guide-events";
 import { PopupWidgetCustomizer } from "./popup-widget-customizer";
@@ -31,15 +37,18 @@ export function EmbedCodeGenerator({
 }: EmbedCodeGeneratorProps) {
   const [activeTab, setActiveTab] = useState<"popup" | "inline">("popup");
   const [popupPreviewConfig, setPopupPreviewConfig] = useState(widgetConfig);
-  const [inlinePreviewConfig, setInlinePreviewConfig] = useState(inlineWidgetConfig);
+  const [inlinePreviewConfig, setInlinePreviewConfig] =
+    useState(inlineWidgetConfig);
   const [copiedPopup, setCopiedPopup] = useState(false);
   const [copiedInline, setCopiedInline] = useState(false);
   const [copiedHtml, setCopiedHtml] = useState(false);
-  
+
   // Framework state
-  const [selectedPopupFramework, setSelectedPopupFramework] = useState<FrameworkId | null>(null);
+  const [selectedPopupFramework, setSelectedPopupFramework] =
+    useState<FrameworkId | null>(null);
   const [copiedPopupFramework, setCopiedPopupFramework] = useState(false);
-  const [selectedInlineFramework, setSelectedInlineFramework] = useState<FrameworkId | null>(null);
+  const [selectedInlineFramework, setSelectedInlineFramework] =
+    useState<FrameworkId | null>(null);
   const [copiedInlineFramework, setCopiedInlineFramework] = useState(false);
 
   useEffect(() => {
@@ -70,14 +79,18 @@ export function EmbedCodeGenerator({
   const handleCopyPopup = async () => {
     await navigator.clipboard.writeText(popupScriptCode);
     setCopiedPopup(true);
-    try { publishGuideEvent("guide:copiedPopup"); } catch {}
+    try {
+      publishGuideEvent("guide:copiedPopup");
+    } catch {}
     setTimeout(() => setCopiedPopup(false), 2000);
   };
 
   const handleCopyInline = async () => {
     await navigator.clipboard.writeText(inlineScriptCode);
     setCopiedInline(true);
-    try { publishGuideEvent("guide:copiedInline"); } catch {}
+    try {
+      publishGuideEvent("guide:copiedInline");
+    } catch {}
     setTimeout(() => setCopiedInline(false), 2000);
   };
 
@@ -93,25 +106,36 @@ export function EmbedCodeGenerator({
     }
   };
 
-  const handleCopyFramework = async (text: string, type: "popup" | "inline") => {
+  const handleCopyFramework = async (
+    text: string,
+    type: "popup" | "inline",
+  ) => {
     await navigator.clipboard.writeText(text);
     if (type === "popup") {
       setCopiedPopupFramework(true);
-      try { publishGuideEvent("guide:copiedPopup"); } catch {}
+      try {
+        publishGuideEvent("guide:copiedPopup");
+      } catch {}
       setTimeout(() => setCopiedPopupFramework(false), 2000);
     } else {
       setCopiedInlineFramework(true);
-      try { publishGuideEvent("guide:copiedInline"); } catch {}
+      try {
+        publishGuideEvent("guide:copiedInline");
+      } catch {}
       setTimeout(() => setCopiedInlineFramework(false), 2000);
     }
   };
 
-  const selectedPopupFrameworkData = selectedPopupFramework ? getFrameworkById(selectedPopupFramework) : null;
+  const selectedPopupFrameworkData = selectedPopupFramework
+    ? getFrameworkById(selectedPopupFramework)
+    : null;
   const popupFrameworkCode = selectedPopupFrameworkData
     ? selectedPopupFrameworkData.generateCode(projectId, "popup", appUrl)
     : "";
 
-  const selectedInlineFrameworkData = selectedInlineFramework ? getFrameworkById(selectedInlineFramework) : null;
+  const selectedInlineFrameworkData = selectedInlineFramework
+    ? getFrameworkById(selectedInlineFramework)
+    : null;
   const inlineFrameworkCode = selectedInlineFrameworkData
     ? selectedInlineFrameworkData.generateCode(projectId, "inline", appUrl)
     : "";
@@ -196,9 +220,9 @@ export function EmbedCodeGenerator({
                         ? cn(
                             "border-transparent text-white shadow-xl",
                             "bg-gradient-to-br",
-                            tab.accent
+                            tab.accent,
                           )
-                        : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600",
                     )}
                     aria-label={tab.ariaLabel}
                   >
@@ -207,7 +231,7 @@ export function EmbedCodeGenerator({
                         "flex h-10 w-10 items-center justify-center rounded-full border-2 text-base transition",
                         isActive
                           ? "border-white/50 bg-white/20 text-white"
-                          : "border-slate-200 bg-slate-50 text-slate-500"
+                          : "border-slate-200 bg-slate-50 text-slate-500",
                       )}
                     >
                       {tab.icon}
@@ -248,7 +272,9 @@ export function EmbedCodeGenerator({
                     />
                     <button
                       className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-                      style={{ backgroundColor: popupPreviewConfig.primaryColor }}
+                      style={{
+                        backgroundColor: popupPreviewConfig.primaryColor,
+                      }}
                       disabled
                     >
                       {popupPreviewConfig.buttonText}
@@ -286,7 +312,9 @@ export function EmbedCodeGenerator({
                 </p>
                 <div
                   className={`flex gap-3 ${
-                    inlinePreviewConfig.layout === "vertical" ? "flex-col" : "flex-row"
+                    inlinePreviewConfig.layout === "vertical"
+                      ? "flex-col"
+                      : "flex-row"
                   }`}
                 >
                   <input
@@ -331,13 +359,16 @@ export function EmbedCodeGenerator({
             <CardHeader>
               <CardTitle>Widget Customization</CardTitle>
               <CardDescription>
-                Adjust the popup content, colors, and behavior to match your brand.
+                Adjust the popup content, colors, and behavior to match your
+                brand.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
                 <p className="text-sm text-indigo-800">
-                  <span className="font-medium">Popup widget</span> appears as an overlay you can trigger by time delay, scroll position, exit intent, or manual activation.
+                  <span className="font-medium">Popup widget</span> appears as
+                  an overlay you can trigger by time delay, scroll position,
+                  exit intent, or manual activation.
                 </p>
               </div>
               <PopupWidgetCustomizer
@@ -377,9 +408,17 @@ export function EmbedCodeGenerator({
                     tag.
                   </p>
                   <div className="relative">
-                    <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                      <code>{popupScriptCode}</code>
-                    </pre>
+                    <SyntaxHighlighter
+                      language="html"
+                      style={vscDarkPlus}
+                      customStyle={{
+                        margin: 0,
+                        borderRadius: "0.5rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      {popupScriptCode}
+                    </SyntaxHighlighter>
                     <Button
                       size="sm"
                       variant="secondary"
@@ -431,23 +470,27 @@ export function EmbedCodeGenerator({
                     <p className="text-xs text-slate-600">
                       Use these helper functions in your scripts:
                     </p>
-                    <pre className="mt-3 p-3 bg-white rounded border text-xs text-slate-700">
-                      <code>
-                        collecty("show"); // Show popup
-                        {"\n"}
-                        collecty("hide"); // Hide popup
-                        {"\n"}
-                        collecty("reset"); // Reset popup
-                      </code>
-                    </pre>
+                    <SyntaxHighlighter
+                      language="javascript"
+                      style={vscDarkPlus}
+                      customStyle={{
+                        margin: 0,
+                        marginTop: "0.75rem",
+                        borderRadius: "0.25rem",
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      {`collecty("show"); // Show popup\ncollecty("hide"); // Hide popup\ncollecty("reset"); // Reset popup`}
+                    </SyntaxHighlighter>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="frameworks" className="mt-4 space-y-4">
                   <p className="text-sm text-slate-600">
-                    Select your framework to see framework-specific installation instructions.
+                    Select your framework to see framework-specific installation
+                    instructions.
                   </p>
-                  
+
                   {!selectedPopupFramework ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {frameworks.map((framework) => {
@@ -455,11 +498,13 @@ export function EmbedCodeGenerator({
                         return (
                           <button
                             key={framework.id}
-                            onClick={() => setSelectedPopupFramework(framework.id)}
+                            onClick={() =>
+                              setSelectedPopupFramework(framework.id)
+                            }
                             className={cn(
                               "flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all",
                               "hover:border-indigo-300 hover:bg-indigo-50",
-                              "border-slate-200 bg-white"
+                              "border-slate-200 bg-white",
                             )}
                           >
                             <Icon className="size-5" />
@@ -511,14 +556,26 @@ export function EmbedCodeGenerator({
                       </div>
 
                       <div className="relative">
-                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                          <code>{popupFrameworkCode}</code>
-                        </pre>
+                        <SyntaxHighlighter
+                          language={
+                            selectedPopupFrameworkData?.language || "javascript"
+                          }
+                          style={vscDarkPlus}
+                          customStyle={{
+                            margin: 0,
+                            borderRadius: "0.5rem",
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          {popupFrameworkCode}
+                        </SyntaxHighlighter>
                         <Button
                           size="sm"
                           variant="secondary"
                           className="absolute top-2 right-2"
-                          onClick={() => handleCopyFramework(popupFrameworkCode, "popup")}
+                          onClick={() =>
+                            handleCopyFramework(popupFrameworkCode, "popup")
+                          }
                         >
                           {copiedPopupFramework ? (
                             <span className="flex items-center gap-1.5">
@@ -576,13 +633,16 @@ export function EmbedCodeGenerator({
             <CardHeader>
               <CardTitle>Widget Customization</CardTitle>
               <CardDescription>
-                Fine-tune the inline form’s layout, copy, and colors from right here.
+                Fine-tune the inline form’s layout, copy, and colors from right
+                here.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
                 <p className="text-sm text-emerald-800">
-                  <span className="font-medium">Inline form</span> embeds directly into your page content — ideal for footers, sidebars, or any persistent signup area.
+                  <span className="font-medium">Inline form</span> embeds
+                  directly into your page content — ideal for footers, sidebars,
+                  or any persistent signup area.
                 </p>
               </div>
               <InlineWidgetCustomizer
@@ -622,9 +682,17 @@ export function EmbedCodeGenerator({
                     dynamic sites with automatic style isolation.
                   </p>
                   <div className="relative">
-                    <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                      <code>{inlineScriptCode}</code>
-                    </pre>
+                    <SyntaxHighlighter
+                      language="html"
+                      style={vscDarkPlus}
+                      customStyle={{
+                        margin: 0,
+                        borderRadius: "0.5rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      {inlineScriptCode}
+                    </SyntaxHighlighter>
                     <Button
                       size="sm"
                       variant="secondary"
@@ -742,9 +810,10 @@ export function EmbedCodeGenerator({
 
                 <TabsContent value="frameworks" className="mt-4 space-y-4">
                   <p className="text-sm text-slate-600">
-                    Select your framework to see framework-specific installation instructions.
+                    Select your framework to see framework-specific installation
+                    instructions.
                   </p>
-                  
+
                   {!selectedInlineFramework ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {frameworks.map((framework) => {
@@ -752,11 +821,13 @@ export function EmbedCodeGenerator({
                         return (
                           <button
                             key={framework.id}
-                            onClick={() => setSelectedInlineFramework(framework.id)}
+                            onClick={() =>
+                              setSelectedInlineFramework(framework.id)
+                            }
                             className={cn(
                               "flex flex-col items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all",
                               "hover:border-indigo-300 hover:bg-indigo-50",
-                              "border-slate-200 bg-white"
+                              "border-slate-200 bg-white",
                             )}
                           >
                             <Icon className="size-5" />
@@ -808,14 +879,27 @@ export function EmbedCodeGenerator({
                       </div>
 
                       <div className="relative">
-                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm">
-                          <code>{inlineFrameworkCode}</code>
-                        </pre>
+                        <SyntaxHighlighter
+                          language={
+                            selectedInlineFrameworkData?.language ||
+                            "javascript"
+                          }
+                          style={vscDarkPlus}
+                          customStyle={{
+                            margin: 0,
+                            borderRadius: "0.5rem",
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          {inlineFrameworkCode}
+                        </SyntaxHighlighter>
                         <Button
                           size="sm"
                           variant="secondary"
                           className="absolute top-2 right-2"
-                          onClick={() => handleCopyFramework(inlineFrameworkCode, "inline")}
+                          onClick={() =>
+                            handleCopyFramework(inlineFrameworkCode, "inline")
+                          }
                         >
                           {copiedInlineFramework ? (
                             <span className="flex items-center gap-1.5">
