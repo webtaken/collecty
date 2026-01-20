@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -22,35 +23,29 @@ export default async function LoginPage({
   }
 
   return (
-    <Card className="w-full max-w-md mx-4 border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+    <Card className="w-full max-w-md mx-4 border border-white/10 shadow-2xl bg-[oklch(0.14_0.015_285)] backdrop-blur-sm">
       <CardHeader className="space-y-4 text-center pb-2">
-        <div className="mx-auto w-16 h-16 bg-linear-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <svg
-            className="w-9 h-9 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
+        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shadow-[oklch(0.68_0.19_18)]/25">
+          <Image
+            src="/logo.svg"
+            alt="Collecty Logo"
+            width={64}
+            height={64}
+            className="rounded-2xl"
+          />
         </div>
         <div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+          <CardTitle className="text-2xl font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">
             Welcome to Collecty
           </CardTitle>
-          <CardDescription className="text-slate-600 mt-2">
+          <CardDescription className="text-white/60 mt-2">
             Sign in to manage your email collection widgets
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         {params.error && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
+          <div className="p-3 text-sm text-[oklch(0.85_0.15_18)] bg-[oklch(0.65_0.22_25)]/15 rounded-lg border border-[oklch(0.65_0.22_25)]/30">
             {params.error === "OAuthAccountNotLinked"
               ? "This email is already linked to another account."
               : "An error occurred during sign in. Please try again."}
@@ -68,7 +63,7 @@ export default async function LoginPage({
           <Button
             type="submit"
             variant="outline"
-            className="w-full h-12 text-base font-medium border-2 hover:bg-slate-50 transition-colors"
+            className="w-full h-12 text-base font-medium border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-colors"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -101,7 +96,7 @@ export default async function LoginPage({
           <Button
             type="submit"
             variant="outline"
-            className="w-full h-12 text-base font-medium border-2 hover:bg-slate-50 transition-colors"
+            className="w-full h-12 text-base font-medium border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-colors"
           >
             <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
               <path
@@ -114,7 +109,7 @@ export default async function LoginPage({
           </Button>
         </form> */}
 
-        <p className="text-xs text-center text-slate-500 pt-4">
+        <p className="text-xs text-center text-white/40 pt-4">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </CardContent>
