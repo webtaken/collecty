@@ -63,7 +63,7 @@ export default async function LoginPage({
           <Button
             type="submit"
             variant="outline"
-            className="w-full h-12 text-base font-medium border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-colors"
+            className="w-full h-12 text-base font-medium border border-white/10 bg-white/5 hover:bg-white/50 text-white transition-colors"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -110,7 +110,21 @@ export default async function LoginPage({
         </form> */}
 
         <p className="text-xs text-center text-white/40 pt-4">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          By continuing, you agree to our{" "}
+          <a
+            href="/terms"
+            className="text-[oklch(0.68_0.19_18)] hover:text-[oklch(0.75_0.19_18)] underline underline-offset-2"
+          >
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            className="text-[oklch(0.68_0.19_18)] hover:text-[oklch(0.75_0.19_18)] underline underline-offset-2"
+          >
+            Privacy Policy
+          </a>
+          .
         </p>
       </CardContent>
     </Card>
