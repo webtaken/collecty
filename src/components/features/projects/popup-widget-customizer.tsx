@@ -39,13 +39,11 @@ export function PopupWidgetCustomizer({
 
   const handleChange = <K extends keyof WidgetConfig>(
     key: K,
-    value: WidgetConfig[K]
+    value: WidgetConfig[K],
   ) => {
-    setConfig((prev) => {
-      const next = { ...prev, [key]: value };
-      onConfigChange?.(next);
-      return next;
-    });
+    const next = { ...config, [key]: value };
+    setConfig(next);
+    onConfigChange?.(next);
     setSaved(false);
   };
 
@@ -200,7 +198,7 @@ export function PopupWidgetCustomizer({
               onValueChange={(value) =>
                 handleChange(
                   "triggerType",
-                  value as WidgetConfig["triggerType"]
+                  value as WidgetConfig["triggerType"],
                 )
               }
             >
@@ -219,24 +217,24 @@ export function PopupWidgetCustomizer({
 
         {(config.triggerType === "delay" ||
           config.triggerType === "scroll") && (
-            <div className="space-y-2">
-              <Label htmlFor="popup-triggerValue">
-                {config.triggerType === "delay"
-                  ? "Delay (seconds)"
-                  : "Scroll Percentage"}
-              </Label>
-              <Input
-                id="popup-triggerValue"
-                type="number"
-                min={0}
-                max={config.triggerType === "scroll" ? 100 : undefined}
-                value={config.triggerValue}
-                onChange={(e) =>
-                  handleChange("triggerValue", parseInt(e.target.value) || 0)
-                }
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="popup-triggerValue">
+              {config.triggerType === "delay"
+                ? "Delay (seconds)"
+                : "Scroll Percentage"}
+            </Label>
+            <Input
+              id="popup-triggerValue"
+              type="number"
+              min={0}
+              max={config.triggerType === "scroll" ? 100 : undefined}
+              value={config.triggerValue}
+              onChange={(e) =>
+                handleChange("triggerValue", parseInt(e.target.value) || 0)
+              }
+            />
+          </div>
+        )}
       </div>
 
       {showPreview && (

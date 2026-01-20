@@ -39,13 +39,11 @@ export function InlineWidgetCustomizer({
 
   const handleChange = <K extends keyof InlineWidgetConfig>(
     key: K,
-    value: InlineWidgetConfig[K]
+    value: InlineWidgetConfig[K],
   ) => {
-    setConfig((prev) => {
-      const next = { ...prev, [key]: value };
-      onConfigChange?.(next);
-      return next;
-    });
+    const next = { ...config, [key]: value };
+    setConfig(next);
+    onConfigChange?.(next);
     setSaved(false);
   };
 
@@ -244,8 +242,9 @@ export function InlineWidgetCustomizer({
                 {config.description}
               </p>
               <div
-                className={`flex gap-3 ${config.layout === "vertical" ? "flex-col" : "flex-row"
-                  }`}
+                className={`flex gap-3 ${
+                  config.layout === "vertical" ? "flex-col" : "flex-row"
+                }`}
               >
                 <input
                   type="email"
@@ -255,8 +254,9 @@ export function InlineWidgetCustomizer({
                   disabled
                 />
                 <button
-                  className={`px-6 py-2.5 text-white text-sm font-semibold ${config.layout === "vertical" ? "w-full" : ""
-                    }`}
+                  className={`px-6 py-2.5 text-white text-sm font-semibold ${
+                    config.layout === "vertical" ? "w-full" : ""
+                  }`}
                   style={{
                     backgroundColor: config.primaryColor,
                     borderRadius: `${config.borderRadius}px`,
