@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -26,21 +27,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-[oklch(0.68_0.19_18)] to-[oklch(0.65_0.22_35)] rounded-xl flex items-center justify-center shadow-lg shadow-[oklch(0.68_0.19_18)]/20">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="Collecty Logo"
+                width={36}
+                height={36}
+                className="rounded-xl"
+              />
               <span className="text-xl font-bold tracking-tight font-[family-name:var(--font-outfit)]">
                 Collecty
               </span>
@@ -624,21 +617,13 @@ export default function LandingPage() {
       <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[oklch(0.68_0.19_18)] to-[oklch(0.65_0.22_35)] rounded-lg flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="Collecty Logo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+            />
             <span className="font-semibold font-[family-name:var(--font-outfit)]">
               Collecty
             </span>
