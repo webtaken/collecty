@@ -19,10 +19,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const projectCount = session?.user?.id ? await getProjectCount(session.user.id) : 0;
+  const projectCount = session?.user?.id
+    ? await getProjectCount(session.user.id)
+    : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <Sidebar projectCount={projectCount} />
       <div className="lg:pl-64">
         <Header />
@@ -31,4 +33,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-
