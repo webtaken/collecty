@@ -19,7 +19,7 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 function isRateLimited(
   identifier: string,
   limit: number = 60,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): boolean {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
@@ -54,7 +54,7 @@ const securityHeaders = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   const { projectId } = await params;
 
@@ -140,7 +140,7 @@ export async function GET(
   const sanitizeText = (
     text: unknown,
     defaultText: string,
-    maxLength: number = 500
+    maxLength: number = 500,
   ): string => {
     return String(text || defaultText).slice(0, maxLength);
   };
@@ -150,18 +150,18 @@ export async function GET(
   const description = sanitizeText(
     config.description,
     "Get the latest updates delivered to your inbox.",
-    500
+    500,
   );
   const buttonText = sanitizeText(config.buttonText, "Subscribe", 50);
   const successMessage = sanitizeText(
     config.successMessage,
     "Thanks for subscribing!",
-    200
+    200,
   );
   const placeholderText = sanitizeText(
     config.placeholderText,
     "Enter your email",
-    100
+    100,
   );
   const primaryColor = sanitizeColor(config.primaryColor, "#6366f1");
   const backgroundColor = sanitizeColor(config.backgroundColor, "#f8fafc");
@@ -170,7 +170,7 @@ export async function GET(
   const layout = sanitizeLayoutType(config.layout);
   const borderRadius = Math.max(
     0,
-    Math.min(Number(config.borderRadius) || 8, 32)
+    Math.min(Number(config.borderRadius) || 8, 32),
   );
 
   const isVertical = layout === "vertical";
@@ -312,20 +312,20 @@ export async function GET(
     <p class="collecty-description">${escapeHtml(description)}</p>
     <form class="collecty-form" onsubmit="return collectySubmit_${projectId.replace(
       /-/g,
-      "_"
+      "_",
     )}(event)">
       <input type="email" class="collecty-input" placeholder="${escapeHtml(
-        placeholderText
+        placeholderText,
       )}" required autocomplete="email" />
       <button type="submit" class="collecty-button">${escapeHtml(
-        buttonText
+        buttonText,
       )}</button>
     </form>
     <div class="collecty-message" role="status" aria-live="polite"></div>
     ${
       showBranding
         ? `<p class="collecty-branding">Powered by <a href="${escapeHtml(
-            appUrl
+            appUrl,
           )}" target="_blank" rel="noopener noreferrer">Collecty</a></p>`
         : ""
     }
@@ -416,7 +416,7 @@ export async function GET(
     status: 200,
     headers: {
       ...securityHeaders,
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
+      "Cache-Control": "no-cache, no-store, must-revalidate", // No caching to ensure config changes are reflected immediately
       "Access-Control-Allow-Origin": "*",
     },
   });

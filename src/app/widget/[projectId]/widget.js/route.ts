@@ -19,7 +19,7 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 function isRateLimited(
   identifier: string,
   limit: number = 60,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): boolean {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
@@ -56,7 +56,7 @@ const securityHeaders = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   const { projectId } = await params;
 
@@ -135,7 +135,7 @@ export async function GET(
   const sanitizeText = (
     text: unknown,
     defaultText: string,
-    maxLength: number = 500
+    maxLength: number = 500,
   ): string => {
     const textStr = String(text || defaultText).slice(0, maxLength);
     return escapeJs(textStr);
@@ -146,13 +146,13 @@ export async function GET(
   const description = sanitizeText(
     config.description,
     "Get the latest updates delivered to your inbox.",
-    500
+    500,
   );
   const buttonText = sanitizeText(config.buttonText, "Subscribe", 50);
   const successMessage = sanitizeText(
     config.successMessage,
     "Thanks for subscribing!",
-    200
+    200,
   );
   const primaryColor = sanitizeColor(config.primaryColor, "#3b82f6");
   const backgroundColor = sanitizeColor(config.backgroundColor, "#ffffff");
@@ -161,7 +161,7 @@ export async function GET(
   const triggerType = sanitizeTriggerType(config.triggerType);
   const triggerValue = Math.max(
     0,
-    Math.min(Number(config.triggerValue) || 5, 3600)
+    Math.min(Number(config.triggerValue) || 5, 3600),
   ); // Cap at 1 hour
 
   // Escape projectId for safe JavaScript injection (already validated as UUID)
@@ -401,7 +401,7 @@ export async function GET(
       ${
         showBranding
           ? `'<p class="collecty-branding">Powered by <a href="${escapeJs(
-              appUrl
+              appUrl,
             )}" target="_blank" rel="noopener noreferrer">Collecty</a></p>'`
           : `''`
       } +
@@ -656,7 +656,7 @@ export async function GET(
     status: 200,
     headers: {
       ...securityHeaders,
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=60", // Reduced cache time for faster config updates
+      "Cache-Control": "no-cache, no-store, must-revalidate", // No caching to ensure config changes (colors, text) are reflected immediately
       "Access-Control-Allow-Origin": "*",
     },
   });
