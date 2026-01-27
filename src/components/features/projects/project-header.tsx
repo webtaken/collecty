@@ -1,6 +1,6 @@
 "use client";
 
-import { useWidgetGenerator } from "./widget-generator-context";
+import { useWidgetContext } from "./widget-context";
 import {
   frameworks,
   type FrameworkId,
@@ -10,6 +10,7 @@ import { publishGuideEvent } from "@/lib/guide-events";
 import { InlineEditableText } from "@/components/ui/inline-editable-text";
 import { cn } from "@/lib/utils";
 import { Code2, Globe, Calendar } from "lucide-react";
+import { useEffect } from "react";
 
 interface ProjectHeaderProps {
   project: {
@@ -23,20 +24,11 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ project }: ProjectHeaderProps) {
-  const {
-    activeTab,
-    selectedPopupFramework,
-    setSelectedPopupFramework,
-    selectedInlineFramework,
-    setSelectedInlineFramework,
-  } = useWidgetGenerator();
+  const { activeEmbedType, selectedFramework, setSelectedFramework } =
+    useWidgetContext();
 
-  const currentFrameworkId =
-    activeTab === "popup" ? selectedPopupFramework : selectedInlineFramework;
-  const setFramework =
-    activeTab === "popup"
-      ? setSelectedPopupFramework
-      : setSelectedInlineFramework;
+  const currentFrameworkId = selectedFramework;
+  const setFramework = setSelectedFramework;
 
   const updateProject = async (field: string, value: string) => {
     await fetch(`/api/projects/${project.id}/update`, {
@@ -120,7 +112,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             Select Framework
           </h2>
           <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-full">
-            {activeTab === "popup" ? "Popup Widget" : "Inline Form"}
+            {activeEmbedType === "popup" ? "Popup Widget" : "Inline Form"}
           </span>
         </div>
 

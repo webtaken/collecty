@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit, Manrope } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import Script from "next/script";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -43,19 +42,6 @@ export default function RootLayout({
       >
         {children}
         <Toaster position="top-right" richColors />
-        <Script
-          id="collecty-widget"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(c,o,l,e,t,y){
-                c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
-                var s=o.createElement('script');s.async=1;s.src=l;
-                o.head.appendChild(s);
-              })(window,document,'https://collecty.dev/widget/d0d5f429-4496-421f-a790-1929c3327017/widget.js');
-            `,
-          }}
-        />
       </body>
     </html>
   );

@@ -1,9 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import {
   NextjsIcon,
   ReactIcon,
@@ -16,12 +13,27 @@ import {
   LaravelIcon,
   VanillaIcon,
 } from "@/components/icons/frameworks";
+import Script from "next/script";
+import { WidgetPreview } from "@/components/landing/widget-preview";
+import { LogoCarousel } from "@/components/ui/logo-carousel";
 
 export default function LandingPage() {
-  const [widgetType, setWidgetType] = useState<"popup" | "inline">("popup");
-
   return (
     <div className="min-h-screen bg-[oklch(0.11_0.015_285)] text-white">
+      {/* Landing page widget */}
+      <Script
+        id="collecty-widget"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+              (function(c,o,l,e,t,y){
+                c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
+                var s=o.createElement('script');s.async=1;s.src=l;
+                o.head.appendChild(s);
+              })(window,document,'https://collecty.dev/widget/d0d5f429-4496-421f-a790-1929c3327017/widget.js');
+            `,
+        }}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[oklch(0.11_0.015_285)]/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,7 +77,6 @@ export default function LandingPage() {
           <div className="absolute -bottom-1/3 -left-1/4 w-[700px] h-[700px] bg-[oklch(0.75_0.15_55)]/10 rounded-full blur-[100px]" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[oklch(0.72_0.16_160)]/8 rounded-full blur-[80px]" />
         </div>
-
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 opacity-0 animate-fade-in"
@@ -132,192 +143,32 @@ export default function LandingPage() {
         </div>
 
         {/* Widget Preview */}
-        <div
-          className="max-w-4xl mx-auto mt-20 relative z-10 opacity-0 animate-fade-in-up"
-          style={{ animationDelay: "0.7s", animationFillMode: "forwards" }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.11_0.015_285)] via-transparent to-transparent z-10 pointer-events-none" />
-
-          {/* Controls */}
-          <div className="flex justify-center mb-6 relative z-20">
-            <div className="bg-white/5 backdrop-blur-sm p-1 rounded-lg border border-white/10 inline-flex">
-              <button
-                onClick={() => setWidgetType("popup")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  widgetType === "popup"
-                    ? "bg-[oklch(0.68_0.19_18)] text-white shadow-lg"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Popup Widget
-              </button>
-              <button
-                onClick={() => setWidgetType("inline")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  widgetType === "inline"
-                    ? "bg-[oklch(0.68_0.19_18)] text-white shadow-lg"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                Inline Form
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-[oklch(0.14_0.015_285)] rounded-2xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-500">
-            <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/5">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-[oklch(0.65_0.22_25)]/80" />
-                <div className="w-3 h-3 rounded-full bg-[oklch(0.78_0.16_85)]/80" />
-                <div className="w-3 h-3 rounded-full bg-[oklch(0.72_0.16_160)]/80" />
-              </div>
-              <div className="flex-1 text-center">
-                <span className="text-xs text-white/40">yourwebsite.com</span>
-              </div>
-            </div>
-            <div className="p-8 bg-gradient-to-br from-[oklch(0.16_0.015_285)] to-[oklch(0.12_0.015_285)] min-h-[450px] flex items-center justify-center relative">
-              {/* Simulated website content */}
-              <div className="absolute inset-0 p-8 opacity-15 pointer-events-none">
-                <div className="h-8 w-48 bg-white/20 rounded mb-8" />
-                <div className="space-y-4">
-                  <div className="h-4 w-full bg-white/10 rounded" />
-                  <div className="h-4 w-full bg-white/10 rounded" />
-                  <div className="h-4 w-3/4 bg-white/10 rounded" />
-                </div>
-
-                {widgetType === "inline" && <div className="h-32 my-8" />}
-
-                <div className="space-y-4 mt-8">
-                  <div className="h-4 w-full bg-white/10 rounded" />
-                  <div className="h-4 w-5/6 bg-white/10 rounded" />
-                </div>
-              </div>
-
-              {/* Widgets */}
-              {widgetType === "popup" ? (
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative z-10 animate-in fade-in zoom-in duration-300">
-                  <button className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2 font-[family-name:var(--font-outfit)]">
-                    Stay in the loop
-                  </h3>
-                  <p className="text-slate-600 mb-6">
-                    Subscribe to our newsletter and never miss an update.
-                  </p>
-                  <div className="flex gap-3">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[oklch(0.68_0.19_18)] transition-colors"
-                      disabled
-                    />
-                    <button className="px-6 py-3 bg-[oklch(0.65_0.19_18)] text-white rounded-lg font-medium hover:bg-[oklch(0.60_0.19_18)] transition-colors">
-                      Subscribe
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full max-w-2xl mx-auto z-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-6 sm:p-8">
-                    <div className="flex flex-col sm:flex-row gap-4 items-center">
-                      <div className="flex-1 text-left">
-                        <h3 className="text-xl font-semibold text-white mb-1 font-[family-name:var(--font-outfit)]">
-                          Join the newsletter
-                        </h3>
-                        <p className="text-white/60 text-sm">
-                          Get weekly insights delivered to your inbox.
-                        </p>
-                      </div>
-                      <div className="flex w-full sm:w-auto gap-2">
-                        <input
-                          type="email"
-                          placeholder="email@example.com"
-                          className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2.5 text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-[oklch(0.68_0.19_18)]/50 transition-all"
-                          disabled
-                        />
-                        <button className="bg-[oklch(0.68_0.19_18)] text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-[oklch(0.63_0.19_18)] transition-colors whitespace-nowrap">
-                          Join Now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <WidgetPreview />
       </section>
 
       {/* Frameworks Section */}
       <section className="py-12 border-y border-white/5 bg-white/[0.02] overflow-hidden">
         <div className="text-center mb-8">
-          <p className="text-white/40 font-medium tracking-wide text-sm uppercase">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4 font-[family-name:var(--font-outfit)]">
             Works with your favorite frameworks
-          </p>
+          </h2>
         </div>
-        <div className="relative flex overflow-x-hidden group">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-12 sm:gap-20">
-            {/* First Set */}
-            {[
-              { icon: NextjsIcon, name: "Next.js" },
-              { icon: ReactIcon, name: "React" },
-              { icon: VueIcon, name: "Vue" },
-              { icon: SvelteIcon, name: "Svelte" },
-              { icon: AstroIcon, name: "Astro" },
-              { icon: AngularIcon, name: "Angular" },
-              { icon: RemixIcon, name: "Remix" },
-              { icon: NuxtIcon, name: "Nuxt" },
-              { icon: LaravelIcon, name: "Laravel" },
-              { icon: VanillaIcon, name: "Vanilla JS" },
-            ].map((Framework, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 text-white/40 opacity-60 hover:opacity-100 transition-opacity"
-              >
-                <Framework.icon className="w-8 h-8 sm:w-10 sm:h-10" />
-                <span className="text-lg font-semibold">{Framework.name}</span>
-              </div>
-            ))}
-
-            {/* Duplicate Set for Infinite Scroll */}
-            {[
-              { icon: NextjsIcon, name: "Next.js" },
-              { icon: ReactIcon, name: "React" },
-              { icon: VueIcon, name: "Vue" },
-              { icon: SvelteIcon, name: "Svelte" },
-              { icon: AstroIcon, name: "Astro" },
-              { icon: AngularIcon, name: "Angular" },
-              { icon: RemixIcon, name: "Remix" },
-              { icon: NuxtIcon, name: "Nuxt" },
-              { icon: LaravelIcon, name: "Laravel" },
-              { icon: VanillaIcon, name: "Vanilla JS" },
-            ].map((Framework, i) => (
-              <div
-                key={`dup-${i}`}
-                className="flex items-center gap-3 text-white/40 opacity-60 hover:opacity-100 transition-opacity"
-              >
-                <Framework.icon className="w-8 h-8 sm:w-10 sm:h-10" />
-                <span className="text-lg font-semibold">{Framework.name}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="absolute top-0 animate-marquee2 whitespace-nowrap flex items-center gap-12 sm:gap-20 ml-12 sm:ml-20">
-            {/* Duplicate of Duplicate Set to ensure smoothness if needed, or rely on CSS animation 'marquee' defined in globals */}
-          </div>
+        <div className="flex justify-center">
+          <LogoCarousel
+            logos={[
+              { id: 1, img: NextjsIcon, name: "Next.js" },
+              { id: 2, img: ReactIcon, name: "React" },
+              { id: 3, img: VueIcon, name: "Vue" },
+              { id: 4, img: SvelteIcon, name: "Svelte" },
+              { id: 5, img: AstroIcon, name: "Astro" },
+              { id: 6, img: AngularIcon, name: "Angular" },
+              { id: 7, img: RemixIcon, name: "Remix" },
+              { id: 8, img: NuxtIcon, name: "Nuxt" },
+              { id: 9, img: LaravelIcon, name: "Laravel" },
+              { id: 10, img: VanillaIcon, name: "Vanilla" },
+            ]}
+            columnCount={3}
+          />
         </div>
       </section>
 

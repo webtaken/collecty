@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, projects } from "@/db";
-import { eq } from "drizzle-orm";
+import { db, widgets, projects, leadMagnets } from "@/db";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import type { WidgetConfigUnified } from "@/db/schema/widgets";
+import { renderTiptapToHtml } from "@/lib/tiptap-renderer";
+import type { RichTextContent } from "@/db/schema/lead-magnets";
 
 // UUID validation schema
 const uuidSchema = z.string().uuid();
 
-// Validate CSS color (hex, rgb, rgba, hsl, hsla, or named colors)
+// Validate CSS color
 const cssColorRegex =
   /^(#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[\d.]+\s*\)|hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\)|hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*[\d.]+\s*\)|[a-zA-Z]+)$/;
 
@@ -24,7 +27,6 @@ function isRateLimited(
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
 
-  // Clean up old entries periodically (every 100th check)
   if (Math.random() < 0.01) {
     for (const [key, value] of rateLimitMap.entries()) {
       if (now > value.resetTime) {
@@ -56,9 +58,9 @@ const securityHeaders = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
+  { params }: { params: Promise<{ widgetId: string }> },
 ) {
-  const { projectId } = await params;
+  const { widgetId } = await params;
 
   // Rate limit by IP
   const forwarded = request.headers.get("x-forwarded-for");
@@ -71,29 +73,72 @@ export async function GET(
     });
   }
 
-  // Validate projectId is a valid UUID to prevent injection
-  const uuidValidation = uuidSchema.safeParse(projectId);
+  // Validate ID is a valid UUID
+  const uuidValidation = uuidSchema.safeParse(widgetId);
   if (!uuidValidation.success) {
-    return new NextResponse("// Invalid project ID", {
+    return new NextResponse("// Invalid ID", {
       status: 400,
       headers: securityHeaders,
     });
   }
 
-  // Get project and its widget config
-  const [project] = await db
-    .select()
-    .from(projects)
-    .where(eq(projects.id, projectId));
+  // First, try to find a widget with this ID
+  let result = await db
+    .select({
+      widget: widgets,
+      project: projects,
+      leadMagnet: leadMagnets,
+    })
+    .from(widgets)
+    .innerJoin(projects, eq(widgets.projectId, projects.id))
+    .leftJoin(leadMagnets, eq(widgets.leadMagnetId, leadMagnets.id))
+    .where(eq(widgets.id, widgetId))
+    .then((rows) => rows[0]);
 
-  if (!project || !project.isActive) {
+  // If not found as widget, try to find it as a projectId (backward compatibility)
+  if (!result) {
+    // Check if this is a project ID and get its default widget
+    const projectResult = await db
+      .select({
+        widget: widgets,
+        project: projects,
+        leadMagnet: leadMagnets,
+      })
+      .from(widgets)
+      .innerJoin(projects, eq(widgets.projectId, projects.id))
+      .leftJoin(leadMagnets, eq(widgets.leadMagnetId, leadMagnets.id))
+      .where(and(eq(widgets.projectId, widgetId), eq(widgets.isDefault, true)))
+      .then((rows) => rows[0]);
+
+    if (!projectResult) {
+      // Fallback: get any widget for this project
+      const anyWidgetResult = await db
+        .select({
+          widget: widgets,
+          project: projects,
+          leadMagnet: leadMagnets,
+        })
+        .from(widgets)
+        .innerJoin(projects, eq(widgets.projectId, projects.id))
+        .leftJoin(leadMagnets, eq(widgets.leadMagnetId, leadMagnets.id))
+        .where(eq(widgets.projectId, widgetId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      result = anyWidgetResult;
+    } else {
+      result = projectResult;
+    }
+  }
+
+  if (!result || !result.widget.isActive || !result.project.isActive) {
     return new NextResponse("// Widget not found or inactive", {
       status: 404,
       headers: securityHeaders,
     });
   }
 
-  const config = project.widgetConfig as Record<string, unknown>;
+  const config = result.widget.config as WidgetConfigUnified;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://collecty.app";
 
   // Helper to safely escape strings for JavaScript string literals
@@ -107,8 +152,8 @@ export async function GET(
       .replace(/\t/g, "\\t")
       .replace(/</g, "\\x3c")
       .replace(/>/g, "\\x3e")
-      .replace(/\u2028/g, "\\u2028") // Line separator
-      .replace(/\u2029/g, "\\u2029"); // Paragraph separator
+      .replace(/\u2028/g, "\\u2028")
+      .replace(/\u2029/g, "\\u2029");
   };
 
   // Validate and sanitize color values
@@ -162,41 +207,50 @@ export async function GET(
   const triggerValue = Math.max(
     0,
     Math.min(Number(config.triggerValue) || 5, 3600),
-  ); // Cap at 1 hour
+  );
 
-  // Escape projectId for safe JavaScript injection (already validated as UUID)
-  const safeProjectId = escapeJs(projectId);
+  // Prepare lead magnet data if available
+  const leadMagnetPreview = result.leadMagnet?.previewText
+    ? sanitizeText(result.leadMagnet.previewText, "", 500)
+    : "";
+  const leadMagnetHtml = result.leadMagnet?.description
+    ? renderTiptapToHtml(result.leadMagnet.description as RichTextContent)
+    : "";
 
-  // Generate the widget JavaScript with Shadow DOM for complete isolation
+  // Use widgetId for tracking
+  const safeWidgetId = escapeJs(widgetId);
+  const safeProjectId = escapeJs(result.project.id);
+
+  // Generate the widget JavaScript
   const widgetScript = `
 (function() {
   'use strict';
 
   // Prevent multiple initializations
-  if (window.__collectyLoaded) return;
-  window.__collectyLoaded = true;
+  if (window.__collectyLoaded_${safeWidgetId.replace(/-/g, "_")}) return;
+  window.__collectyLoaded_${safeWidgetId.replace(/-/g, "_")} = true;
 
+  const WIDGET_ID = "${safeWidgetId}";
   const PROJECT_ID = "${safeProjectId}";
   const API_URL = "${escapeJs(appUrl)}/api/v1/subscribe";
   const WIDGET_TITLE = "${title}";
   const WIDGET_DESCRIPTION = "${description}";
   const BUTTON_TEXT = "${buttonText}";
   const SUCCESS_MESSAGE = "${successMessage}";
+  const LEAD_MAGNET_PREVIEW = "${leadMagnetPreview}";
+  const LEAD_MAGNET_HTML = "${escapeJs(leadMagnetHtml)}";
   const TRIGGER_TYPE = "${escapeJs(triggerType)}";
   const TRIGGER_VALUE = ${triggerValue};
 
-  // HTML encode function to prevent XSS when inserting into innerHTML
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
 
-  // Widget state
   let shadowRoot = null;
   let hostElement = null;
 
-  // Styles - scoped within Shadow DOM (completely isolated from host page)
   const styles = \`
     :host {
       all: initial;
@@ -364,24 +418,18 @@ export async function GET(
     }
   \`;
 
-  // Create widget using Shadow DOM for complete isolation
   function createWidget() {
-    // Create host element
     hostElement = document.createElement('div');
-    hostElement.id = 'collecty-widget-host';
-    // Position the host element to cover the entire viewport
+    hostElement.id = 'collecty-widget-host-' + WIDGET_ID;
     hostElement.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;';
     document.body.appendChild(hostElement);
 
-    // Create Shadow DOM (closed mode for extra encapsulation)
     shadowRoot = hostElement.attachShadow({ mode: 'closed' });
 
-    // Add styles to Shadow DOM
     const styleEl = document.createElement('style');
     styleEl.textContent = styles;
     shadowRoot.appendChild(styleEl);
 
-    // Create overlay inside Shadow DOM
     const overlay = document.createElement('div');
     overlay.className = 'collecty-overlay';
     overlay.style.pointerEvents = 'auto';
@@ -409,7 +457,6 @@ export async function GET(
 
     shadowRoot.appendChild(overlay);
 
-    // Get elements from Shadow DOM
     const form = shadowRoot.querySelector('.collecty-form');
     const input = shadowRoot.querySelector('.collecty-input');
     const button = shadowRoot.querySelector('.collecty-button');
@@ -417,10 +464,8 @@ export async function GET(
     const closeBtn = shadowRoot.querySelector('.collecty-close');
     const modal = shadowRoot.querySelector('.collecty-modal');
 
-    // Stop event propagation to prevent host page interference
     const stopPropagation = (e) => e.stopPropagation();
     
-    // Prevent host page from capturing our events
     modal.addEventListener('click', stopPropagation);
     modal.addEventListener('mousedown', stopPropagation);
     modal.addEventListener('mouseup', stopPropagation);
@@ -431,21 +476,18 @@ export async function GET(
     input.addEventListener('blur', stopPropagation);
     input.addEventListener('input', stopPropagation);
 
-    // Close button handler
     closeBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       hideWidget(false);
     });
 
-    // Click outside to close
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
         hideWidget(false);
       }
     });
 
-    // Escape key to close
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -453,7 +495,6 @@ export async function GET(
       }
     });
 
-    // Form submission handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -468,26 +509,22 @@ export async function GET(
       messageEl.textContent = '';
 
       try {
-        // Fetch geolocation data from ipapi.co (client-side to avoid rate limits)
         let geoData = null;
         try {
           const geoRes = await fetch('https://ipapi.co/json/');
           if (geoRes.ok) {
             geoData = await geoRes.json();
           }
-        } catch (geoErr) {
-          // Geolocation fetch failed, continue without it
-        }
+        } catch (geoErr) {}
 
-        // Build metadata object
         const metadata = {
           userAgent: navigator.userAgent,
           referrer: document.referrer,
           pageUrl: window.location.href,
-          source: 'popup-widget'
+          source: 'popup-widget',
+          widgetId: WIDGET_ID
         };
 
-        // Add geolocation data if available
         if (geoData) {
           metadata.ip = geoData.ip;
           metadata.city = geoData.city;
@@ -513,10 +550,25 @@ export async function GET(
         const data = await response.json();
 
         if (response.ok) {
-          messageEl.className = 'collecty-message success';
-          messageEl.textContent = SUCCESS_MESSAGE;
-          input.value = '';
-          setTimeout(() => hideWidget(true), 2000);
+          if (LEAD_MAGNET_HTML) {
+            const titleEl = modal.querySelector('.collecty-title');
+            const descEl = modal.querySelector('.collecty-description');
+            const formEl = modal.querySelector('.collecty-form');
+            
+            if (titleEl) titleEl.textContent = LEAD_MAGNET_PREVIEW || WIDGET_TITLE;
+            if (descEl) {
+              descEl.innerHTML = LEAD_MAGNET_HTML;
+              descEl.style.maxHeight = '300px';
+              descEl.style.overflowY = 'auto';
+            }
+            if (formEl) formEl.style.display = 'none';
+            if (messageEl) messageEl.style.display = 'none';
+          } else {
+            messageEl.className = 'collecty-message success';
+            messageEl.textContent = SUCCESS_MESSAGE;
+            input.value = '';
+            setTimeout(() => hideWidget(true), 2000);
+          }
         } else {
           throw new Error(data.error || 'Something went wrong');
         }
@@ -540,12 +592,10 @@ export async function GET(
     if (overlay) {
       overlay.classList.add('active');
       hostElement.style.pointerEvents = 'auto';
-      // Focus the input for accessibility
       setTimeout(() => {
         const input = shadowRoot.querySelector('.collecty-input');
         if (input) input.focus();
       }, 100);
-      // Prevent body scroll
       document.body.style.overflow = 'hidden';
     }
   }
@@ -556,22 +606,18 @@ export async function GET(
       if (overlay) {
         overlay.classList.remove('active');
         hostElement.style.pointerEvents = 'none';
-        // Restore body scroll
         document.body.style.overflow = '';
         if (setCookie) {
-          // Set cookie to prevent showing again for 24 hours
-          document.cookie = 'collecty_shown=1;max-age=86400;path=/;SameSite=Lax';
+          document.cookie = 'collecty_' + WIDGET_ID + '=1;max-age=86400;path=/;SameSite=Lax';
         }
       }
     }
   }
 
-  // Check if widget was already shown
   function hasBeenShown() {
-    return document.cookie.includes('collecty_shown=1');
+    return document.cookie.includes('collecty_' + WIDGET_ID + '=1');
   }
 
-  // Setup trigger based on configuration
   function setupTrigger() {
     if (hasBeenShown()) return;
 
@@ -601,15 +647,12 @@ export async function GET(
         document.addEventListener('mouseleave', handleMouseLeave);
         break;
       case 'click':
-        // Manual trigger only - user calls collecty('show')
         break;
       default:
-        // Default to 5 second delay
         setTimeout(showWidget, 5000);
     }
   }
 
-  // Initialize when DOM is ready
   function init() {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', setupTrigger);
@@ -618,8 +661,7 @@ export async function GET(
     }
   }
 
-  // Expose public API
-  window.collecty = function(action, data) {
+  window.collecty = window.collecty || function(action, data) {
     switch (action) {
       case 'show':
         showWidget();
@@ -631,15 +673,13 @@ export async function GET(
         init();
         break;
       case 'reset':
-        // Clear the shown cookie to allow re-showing
-        document.cookie = 'collecty_shown=;max-age=0;path=/;SameSite=Lax';
+        document.cookie = 'collecty_' + WIDGET_ID + '=;max-age=0;path=/;SameSite=Lax';
         break;
       default:
         console.warn('Collecty: Unknown action "' + action + '"');
     }
   };
 
-  // Process any queued commands
   if (window.collecty.q && Array.isArray(window.collecty.q)) {
     const queue = window.collecty.q;
     queue.forEach(function(args) {
@@ -647,7 +687,6 @@ export async function GET(
     });
   }
 
-  // Auto-initialize
   init();
 })();
 `;
@@ -656,7 +695,7 @@ export async function GET(
     status: 200,
     headers: {
       ...securityHeaders,
-      "Cache-Control": "no-cache, no-store, must-revalidate", // No caching to ensure config changes (colors, text) are reflected immediately
+      "Cache-Control": "no-cache, no-store, must-revalidate",
       "Access-Control-Allow-Origin": "*",
     },
   });

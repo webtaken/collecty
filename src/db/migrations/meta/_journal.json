@@ -8,6 +8,41 @@
       "when": 1767072093587,
       "tag": "0000_charming_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769100295389,
+      "tag": "0001_eminent_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769103005601,
+      "tag": "0002_minor_misty_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769103713084,
+      "tag": "0003_next_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769187300640,
+      "tag": "0004_free_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769188909684,
+      "tag": "0005_noisy_namor",
+      "breakpoints": true
     }
   ]
 }

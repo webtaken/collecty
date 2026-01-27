@@ -1,3 +1,4 @@
+"use client";
 import type { SVGProps } from "react";
 
 const SvelteIcon = (props: SVGProps<SVGSVGElement>) => (

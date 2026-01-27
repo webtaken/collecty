@@ -14,8 +14,18 @@ export {
   projects,
   projectsRelations,
   defaultWidgetConfig,
+  defaultInlineWidgetConfig,
   type WidgetConfig,
+  type InlineWidgetConfig,
 } from "./projects";
+
+// Widget tables
+export {
+  widgets,
+  widgetsRelations,
+  defaultWidgetConfigUnified,
+  type WidgetConfigUnified,
+} from "./widgets";
 
 // Subscriber tables
 export {
@@ -27,3 +37,9 @@ export {
 // API Key tables
 export { apiKeys, apiKeysRelations } from "./api-keys";
 
+// Lead Magnet tables
+export {
+  leadMagnets,
+  leadMagnetsRelations,
+  type RichTextContent,
+} from "./lead-magnets";

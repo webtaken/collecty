@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { db, projects, subscribers, apiKeys } from "@/db";
+import { db, projects, subscribers, apiKeys, widgets, leadMagnets } from "@/db";
 import { eq, and, desc, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   type WidgetConfig,
   type InlineWidgetConfig,
 } from "@/db/schema/projects";
+import { defaultWidgetConfigUnified } from "@/db/schema/widgets";
 import { nanoid } from "nanoid";
 import { createHash } from "crypto";
 
@@ -43,6 +44,15 @@ export async function createProjectAction(formData: FormData) {
       inlineWidgetConfig: defaultInlineWidgetConfig,
     })
     .returning();
+
+  // Auto-create a default widget for new projects
+  await db.insert(widgets).values({
+    projectId: project.id,
+    name: "Widget 1",
+    config: defaultWidgetConfigUnified,
+    isDefault: true,
+  });
+
   revalidatePath("/projects");
   revalidatePath("/dashboard");
   redirect(`/projects/${project.id}`);
@@ -74,6 +84,14 @@ export async function createProjectInlineAction(formData: FormData) {
     })
     .returning();
 
+  // Auto-create a default widget for new projects
+  await db.insert(widgets).values({
+    projectId: project.id,
+    name: "Widget 1",
+    config: defaultWidgetConfigUnified,
+    isDefault: true,
+  });
+
   revalidatePath("/projects");
   revalidatePath("/dashboard");
   return { projectId: project.id };
@@ -81,7 +99,7 @@ export async function createProjectInlineAction(formData: FormData) {
 
 export async function updateProjectAction(
   projectId: string,
-  formData: FormData
+  formData: FormData,
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -104,7 +122,7 @@ export async function updateProjectAction(
       updatedAt: new Date(),
     })
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   revalidatePath(`/projects/${projectId}`);
@@ -113,7 +131,7 @@ export async function updateProjectAction(
 
 export async function updateWidgetConfigAction(
   projectId: string,
-  config: WidgetConfig
+  config: WidgetConfig,
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -127,7 +145,7 @@ export async function updateWidgetConfigAction(
       updatedAt: new Date(),
     })
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   revalidatePath(`/projects/${projectId}`);
@@ -135,7 +153,7 @@ export async function updateWidgetConfigAction(
 
 export async function updateInlineWidgetConfigAction(
   projectId: string,
-  config: InlineWidgetConfig
+  config: InlineWidgetConfig,
 ) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -149,7 +167,7 @@ export async function updateInlineWidgetConfigAction(
       updatedAt: new Date(),
     })
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   revalidatePath(`/projects/${projectId}`);
@@ -165,7 +183,7 @@ export async function toggleProjectStatusAction(projectId: string) {
     .select()
     .from(projects)
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   if (!project) {
@@ -194,7 +212,7 @@ export async function deleteProjectAction(projectId: string) {
   await db
     .delete(projects)
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   revalidatePath("/projects");
@@ -213,7 +231,7 @@ export async function generateApiKeyAction(projectId: string, name: string) {
     .select()
     .from(projects)
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   if (!project) {
@@ -249,7 +267,7 @@ export async function deleteApiKeyAction(keyId: string, projectId: string) {
     .select()
     .from(projects)
     .where(
-      and(eq(projects.id, projectId), eq(projects.userId, session.user.id))
+      and(eq(projects.id, projectId), eq(projects.userId, session.user.id)),
     );
 
   if (!project) {
@@ -289,10 +307,36 @@ export async function getProjectWithStats(projectId: string, userId: string) {
     .where(eq(apiKeys.projectId, projectId))
     .orderBy(desc(apiKeys.createdAt));
 
+  // Fetch widgets for this project with their lead magnets
+  const widgetsWithLeadMagnets = await db
+    .select({
+      widget: widgets,
+      leadMagnet: leadMagnets,
+    })
+    .from(widgets)
+    .leftJoin(leadMagnets, eq(widgets.leadMagnetId, leadMagnets.id))
+    .where(eq(widgets.projectId, projectId))
+    .orderBy(desc(widgets.createdAt));
+
+  // Transform to include lead magnet data in widget objects
+  const projectWidgets = widgetsWithLeadMagnets.map(
+    ({ widget, leadMagnet }) => ({
+      ...widget,
+      leadMagnet: leadMagnet
+        ? {
+            id: leadMagnet.id,
+            description: leadMagnet.description,
+            previewText: leadMagnet.previewText,
+          }
+        : null,
+    }),
+  );
+
   return {
     ...project,
     subscriberCount: subscriberCount?.count || 0,
     recentSubscribers,
     apiKeys: projectApiKeys,
+    widgets: projectWidgets,
   };
 }
