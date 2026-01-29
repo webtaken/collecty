@@ -51,6 +51,12 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
+              <Link
+                href="/blog"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                Blog
+              </Link>
               <Link href="/login">
                 <Button
                   variant="ghost"
