@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
                 var s=o.createElement('script');s.async=1;s.src=l;
                 o.head.appendChild(s);
-              })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+              })(window,document,'${appUrl}/widget/${projectId}/popup.js');
             \`,
           }}
         />
@@ -106,7 +106,7 @@ const generateReactCode = (
     c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
     var s=o.createElement('script');s.async=1;s.src=l;
     o.head.appendChild(s);
-  })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+  })(window,document,'${appUrl}/widget/${projectId}/popup.js');
 </script>
 
 // Or in a component with useEffect:
@@ -115,7 +115,7 @@ import { useEffect } from 'react';
 export function CollectyWidget() {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = '${appUrl}/widget/${projectId}/widget.js';
+    script.src = '${appUrl}/widget/${projectId}/popup.js';
     script.async = true;
     document.head.appendChild(script);
   }, []);
@@ -157,7 +157,7 @@ const app = createApp(App);
 
 // Add script to head
 const script = document.createElement('script');
-script.src = '${appUrl}/widget/${projectId}/widget.js';
+script.src = '${appUrl}/widget/${projectId}/popup.js';
 script.async = true;
 document.head.appendChild(script);
 
@@ -169,7 +169,7 @@ import { onMounted } from 'vue';
 
 onMounted(() => {
   const script = document.createElement('script');
-  script.src = '${appUrl}/widget/${projectId}/widget.js';
+  script.src = '${appUrl}/widget/${projectId}/popup.js';
   script.async = true;
   document.head.appendChild(script);
 });
@@ -213,7 +213,7 @@ const generateSvelteCode = (
     c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
     var s=o.createElement('script');s.async=1;s.src=l;
     o.head.appendChild(s);
-  })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+  })(window,document,'${appUrl}/widget/${projectId}/popup.js');
 </script>
 
 // Or in a Svelte component:
@@ -222,7 +222,7 @@ const generateSvelteCode = (
 
   onMount(() => {
     const script = document.createElement('script');
-    script.src = '${appUrl}/widget/${projectId}/widget.js';
+    script.src = '${appUrl}/widget/${projectId}/popup.js';
     script.async = true;
     document.head.appendChild(script);
   });
@@ -274,7 +274,7 @@ const generateAstroCode = (
         c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
         var s=o.createElement('script');s.async=1;s.src=l;
         o.head.appendChild(s);
-      })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+      })(window,document,'${appUrl}/widget/${projectId}/popup.js');
     </script>
   </body>
 </html>`;
@@ -301,7 +301,7 @@ const generateAngularCode = (
     c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
     var s=o.createElement('script');s.async=1;s.src=l;
     o.head.appendChild(s);
-  })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+  })(window,document,'${appUrl}/widget/${projectId}/popup.js');
 </script>
 
 // Or in a component:
@@ -314,7 +314,7 @@ import { Component, OnInit } from '@angular/core';
 export class CollectyComponent implements OnInit {
   ngOnInit() {
     const script = document.createElement('script');
-    script.src = '${appUrl}/widget/${projectId}/widget.js';
+    script.src = '${appUrl}/widget/${projectId}/popup.js';
     script.async = true;
     document.head.appendChild(script);
   }
@@ -376,7 +376,7 @@ export default function App() {
                 c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
                 var s=o.createElement('script');s.async=1;s.src=l;
                 o.head.appendChild(s);
-              })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+              })(window,document,'${appUrl}/widget/${projectId}/popup.js');
             \`,
           }}
         />
@@ -417,7 +417,7 @@ export default defineNuxtConfig({
               c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
               var s=o.createElement('script');s.async=1;s.src=l;
               o.head.appendChild(s);
-            })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+            })(window,document,'${appUrl}/widget/${projectId}/popup.js');
           \`,
           type: 'text/javascript'
         }
@@ -429,7 +429,7 @@ export default defineNuxtConfig({
 // Or in a plugin: plugins/collecty.client.ts
 export default defineNuxtPlugin(() => {
   const script = document.createElement('script');
-  script.src = '${appUrl}/widget/${projectId}/widget.js';
+  script.src = '${appUrl}/widget/${projectId}/popup.js';
   script.async = true;
   document.head.appendChild(script);
 });`;
@@ -481,7 +481,7 @@ const generateLaravelCode = (
             c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
             var s=o.createElement('script');s.async=1;s.src=l;
             o.head.appendChild(s);
-        })(window,document,'{{ config('app.url') }}/widget/${projectId}/widget.js');
+        })(window,document,'{{ config('app.url') }}/widget/${projectId}/popup.js');
     </script>
 </body>
 </html>`;
@@ -508,7 +508,7 @@ const generateVanillaCode = (
     c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
     var s=o.createElement('script');s.async=1;s.src=l;
     o.head.appendChild(s);
-  })(window,document,'${appUrl}/widget/${projectId}/widget.js');
+  })(window,document,'${appUrl}/widget/${projectId}/popup.js');
 </script>`;
   } else {
     return `<!-- Where you want the form to appear -->
