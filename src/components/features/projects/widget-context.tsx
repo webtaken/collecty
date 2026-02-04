@@ -57,6 +57,7 @@ type WidgetContextType = {
     value: WidgetConfigUnified[K],
   ) => void;
   saveWidget: () => Promise<void>;
+  deleteWidget: (widgetId: string) => Promise<void>;
   createWidget: (name?: string) => Promise<void>;
   isSaving: boolean;
   hasUnsavedChanges: boolean;
@@ -102,8 +103,8 @@ export function WidgetContextProvider({
   const [widgets, setWidgets] = useState<WidgetEntity[]>(initialWidgets);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
     initialWidgets.find((w) => w.isDefault)?.id ||
-      initialWidgets[0]?.id ||
-      null,
+    initialWidgets[0]?.id ||
+    null,
   );
   const [localConfig, setLocalConfig] = useState<WidgetConfigUnified | null>(
     null,
@@ -243,10 +244,10 @@ export function WidgetContextProvider({
           prev.map((w) =>
             w.id === selectedWidget.id
               ? {
-                  ...w,
-                  config: localConfig || w.config,
-                  leadMagnetId: newLeadMagnetId,
-                }
+                ...w,
+                config: localConfig || w.config,
+                leadMagnetId: newLeadMagnetId,
+              }
               : w,
           ),
         );
@@ -277,6 +278,26 @@ export function WidgetContextProvider({
     });
   }
 
+  async function deleteOneWidget(widgetId: string) {
+    startTransition(async () => {
+      try {
+        // Need to import deleteWidgetAction
+        const { deleteWidgetAction } = await import("@/actions/widgets");
+        await deleteWidgetAction(widgetId);
+        setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
+        if (selectedWidgetId === widgetId) {
+          // Determine new selected widget
+          const remaining = widgets.filter(w => w.id !== widgetId);
+          const next = remaining.find(w => w.isDefault) || remaining[0];
+          setSelectedWidgetId(next ? next.id : null);
+        }
+        router.refresh();
+      } catch (error) {
+        console.error("Failed to delete widget", error);
+      }
+    })
+  }
+
   return (
     <WidgetContext.Provider
       value={{
@@ -288,6 +309,7 @@ export function WidgetContextProvider({
         updateConfig,
         saveWidget,
         createWidget: createNewWidget,
+        deleteWidget: deleteOneWidget,
         isSaving,
         hasUnsavedChanges,
         activeEmbedType,

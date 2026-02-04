@@ -15,7 +15,7 @@ import {
 } from "@/lib/frameworks/install-code-generator";
 
 export function WidgetInstallNew() {
-  const { selectedWidget, activeEmbedType, selectedFramework } =
+  const { selectedWidget, activeEmbedType, selectedFramework, setSelectedFramework } =
     useWidgetContext();
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
@@ -117,9 +117,37 @@ export function CollectyInlineWidget() {
         </p>
       </div>
 
+      {/* Framework Selector */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-slate-900">Select your Framework</h3>
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+          {frameworks.map((fw) => {
+            const Icon = fw.icon;
+            const isSelected = selectedFramework === fw.id;
+            return (
+              <button
+                key={fw.id}
+                onClick={() => setSelectedFramework(fw.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200",
+                  isSelected
+                    ? "border-orange-500 bg-orange-50 text-orange-700 ring-2 ring-orange-500/20"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                )}
+              >
+                <Icon className="w-6 h-6 mb-2" />
+                <span className="text-[10px] font-medium uppercase tracking-wider text-center w-full truncate">
+                  {fw.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Widget badge */}
       <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-slate-50 to-white rounded-xl border">
-        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white">
+        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white">
           <FileCode className="h-5 w-5" />
         </div>
         <div className="flex-1">
@@ -129,9 +157,9 @@ export function CollectyInlineWidget() {
           </p>
         </div>
         {framework && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg">
-            <framework.icon className="h-4 w-4 text-indigo-600" />
-            <span className="text-sm font-medium text-indigo-700">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-lg">
+            <framework.icon className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-medium text-orange-700">
               {framework.name}
             </span>
           </div>
@@ -140,15 +168,15 @@ export function CollectyInlineWidget() {
 
       {/* Framework-specific instructions notice */}
       {framework && (
-        <div className="flex items-start gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-          <Info className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-100 rounded-xl">
+          <Info className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-indigo-900">
+            <p className="text-sm font-medium text-orange-900">
               {framework.name} Installation Instructions
             </p>
-            <p className="text-xs text-indigo-700 mt-0.5">
+            <p className="text-xs text-orange-700 mt-0.5">
               {framework.description} • Add to{" "}
-              <code className="bg-indigo-100 px-1 rounded">
+              <code className="bg-orange-100 px-1 rounded">
                 {framework.fileLocation}
               </code>
             </p>
@@ -332,19 +360,19 @@ function CodeBlock({
       className={cn(
         "space-y-2 p-4 rounded-xl transition-all",
         highlighted
-          ? "bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200"
+          ? "bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200"
           : "bg-white",
       )}
     >
       <div className="flex items-center justify-between">
         <div>
-          <h3 className={cn("font-medium", highlighted && "text-indigo-900")}>
+          <h3 className={cn("font-medium", highlighted && "text-orange-900")}>
             {title}
           </h3>
           <p
             className={cn(
               "text-xs",
-              highlighted ? "text-indigo-700" : "text-muted-foreground",
+              highlighted ? "text-orange-700" : "text-muted-foreground",
             )}
           >
             {description}
@@ -356,7 +384,7 @@ function CodeBlock({
           onClick={onCopy}
           className={cn(
             "gap-2 transition-all",
-            copied && "bg-emerald-50 border-emerald-200 text-emerald-700",
+            copied && "bg-orange-50 border-orange-200 text-orange-700",
           )}
         >
           {copied ? (
@@ -375,7 +403,7 @@ function CodeBlock({
       <div
         className={cn(
           "rounded-lg overflow-hidden",
-          highlighted ? "border-2 border-indigo-300" : "border",
+          highlighted ? "border-2 border-orange-300" : "border",
         )}
       >
         <SyntaxHighlighter

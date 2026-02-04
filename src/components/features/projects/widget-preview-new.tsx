@@ -1,18 +1,14 @@
-"use client";
-
 import { useState } from "react";
 import { useWidgetContext } from "./widget-context";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { WidgetSelector } from "./widget-selector";
 import { WidgetInstallNew } from "./widget-install-new";
 import { RichTextEditor } from "@/components/features/lead-magnets/rich-text-editor";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code, Sparkles, Gift } from "lucide-react";
+import { Sparkles, Gift } from "lucide-react";
 
 export function WidgetPreviewNew() {
   const {
@@ -32,23 +28,8 @@ export function WidgetPreviewNew() {
   const isPopup = activeEmbedType === "popup";
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <WidgetSelector />
-          </div>
-          <Button
-            onClick={() => setIsInstallOpen(true)}
-            className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-          >
-            <Code className="h-4 w-4" />
-            Get Embed Code
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent>
+    <Card className="overflow-hidden border-0 shadow-none bg-transparent">
+      <CardContent className="p-0">
         <div className="space-y-4">
           {/* Preview label */}
           <div className="flex items-center gap-2">
@@ -70,9 +51,9 @@ export function WidgetPreviewNew() {
               }
             }}
           >
-            <TabsList>
-              <TabsTrigger value="popup">Popup</TabsTrigger>
-              <TabsTrigger value="inline">Inline</TabsTrigger>
+            <TabsList className="bg-white/50 border border-slate-200">
+              <TabsTrigger value="popup">Popup Widget</TabsTrigger>
+              <TabsTrigger value="inline">Inline Form</TabsTrigger>
               {leadMagnetEnabled && (
                 <TabsTrigger value="lead-magnet" className="gap-1.5">
                   <Gift className="h-3.5 w-3.5" />
