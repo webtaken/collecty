@@ -42,14 +42,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface ProjectLeftSidebarProps {
+interface ProjectRightSidebarProps {
   project: {
     id: string;
     name: string;
   };
 }
 
-export function ProjectLeftSidebar({ project }: ProjectLeftSidebarProps) {
+export function ProjectRightSidebar({ project }: ProjectRightSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { widgets, createWidget, deleteWidget, isSaving } = useWidgetContext();
@@ -64,8 +64,6 @@ export function ProjectLeftSidebar({ project }: ProjectLeftSidebarProps) {
       await createWidget(newWidgetName || undefined);
       setNewWidgetName("");
       setIsCreateDialogOpen(false);
-      // Router refresh is handled in context, but we might want to navigate to the new widget
-      // Ideally createWidget returns the ID, but for now we rely on context updating
     } catch (error) {
       console.error("Failed to create", error);
     }
@@ -75,7 +73,7 @@ export function ProjectLeftSidebar({ project }: ProjectLeftSidebarProps) {
     if (widgetToDelete) {
       await deleteWidget(widgetToDelete);
       setWidgetToDelete(null);
-      router.push(`/projects/${project.id}/subscribers`); // Fallback navigation
+      router.push(`/projects/${project.id}/subscribers`);
     }
   };
 
@@ -84,7 +82,7 @@ export function ProjectLeftSidebar({ project }: ProjectLeftSidebarProps) {
     pathname?.includes(`/widgets/${widgetId}`);
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200 w-64 flex-shrink-0 rounded-lg">
+    <div className="flex flex-col h-full bg-white border border-slate-200 w-64 shrink-0 rounded-lg">
       {/* Project Title Area */}
       <div className="p-4 border-b border-slate-100">
         <h2

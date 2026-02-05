@@ -330,3 +330,13 @@
 .animate-stagger-5 {
   animation-delay: 0.5s;
 }
+
+/* Scrollbar hide utility - hides scrollbar while maintaining scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, and Opera */
+}

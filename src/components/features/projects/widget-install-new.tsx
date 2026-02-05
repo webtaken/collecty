@@ -22,8 +22,12 @@ import {
 } from "@/lib/frameworks/install-code-generator";
 
 export function WidgetInstallNew() {
-  const { selectedWidget, activeEmbedType, selectedFramework, setSelectedFramework } =
-    useWidgetContext();
+  const {
+    selectedWidget,
+    activeEmbedType,
+    selectedFramework,
+    setSelectedFramework,
+  } = useWidgetContext();
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://collecty.dev";
@@ -111,7 +115,7 @@ export function CollectyInlineWidget() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFrameworks = frameworks.filter((fw) =>
-    fw.name.toLowerCase().includes(searchQuery.toLowerCase())
+    fw.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Framework-specific code for the selected framework
@@ -130,7 +134,10 @@ export function CollectyInlineWidget() {
               <FileCode className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate text-sm" title={selectedWidget.name}>
+              <p
+                className="font-medium truncate text-sm"
+                title={selectedWidget.name}
+              >
                 {selectedWidget.name}
               </p>
               <p className="text-[10px] text-muted-foreground font-mono truncate">
@@ -178,7 +185,7 @@ export function CollectyInlineWidget() {
 
         {/* Scrollable Framework List */}
         <div className="p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent flex-1">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {filteredFrameworks.map((fw) => {
               const Icon = fw.icon;
               const isSelected = selectedFramework === fw.id;
@@ -188,14 +195,14 @@ export function CollectyInlineWidget() {
                   onClick={() => setSelectedFramework(fw.id)}
                   title={fw.name}
                   className={cn(
-                    "flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 aspect-square",
+                    "flex flex-col items-center justify-center p-2 rounded-lg border transition-all duration-200 aspect-square",
                     isSelected
                       ? "border-orange-500 bg-white text-orange-700 shadow-md ring-2 ring-orange-500/20 z-10"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:shadow-sm"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:shadow-sm",
                   )}
                 >
-                  <Icon className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-center w-full truncate">
+                  <Icon className="w-5 h-5 mb-1" />
+                  <span className="text-[8px] uppercase tracking-wider text-center w-full truncate">
                     {fw.name}
                   </span>
                 </button>

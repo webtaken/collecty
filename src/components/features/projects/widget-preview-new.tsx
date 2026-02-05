@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWidgetContext } from "./widget-context";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -8,7 +9,7 @@ import { WidgetInstallNew } from "./widget-install-new";
 import { RichTextEditor } from "@/components/features/lead-magnets/rich-text-editor";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Gift } from "lucide-react";
+import { Sparkles, Gift, Zap } from "lucide-react";
 import { useEffect } from "react";
 
 interface WidgetPreviewNewProps {
@@ -269,15 +270,25 @@ export function WidgetPreviewNew({
               </TabsContent>
             )}
           </Tabs>
+
+          {/* CTA Button */}
+          <div className="flex justify-center pt-2">
+            <Button
+              onClick={() => setIsInstallOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 h-11 px-6 font-bold shrink-0 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              disabled={!selectedWidget}
+            >
+              <Zap className="h-4 w-4 fill-yellow-400 stroke-yellow-400" />
+              Install
+            </Button>
+          </div>
         </div>
       </CardContent>
 
       {/* Install Dialog */}
       <Dialog open={isInstallOpen} onOpenChange={setIsInstallOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
-          <div className="overflow-y-auto flex-1">
-            <WidgetInstallNew />
-          </div>
+        <DialogContent className="!max-w-7xl min-w-[1024px] w-full h-[85vh] p-0 overflow-hidden bg-slate-50 flex flex-col">
+          <WidgetInstallNew />
         </DialogContent>
       </Dialog>
     </Card>

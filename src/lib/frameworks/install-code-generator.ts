@@ -519,7 +519,6 @@ const generateVanillaCode = (
   }
 };
 
-
 const generateWordPressCode = (
   projectId: string,
   widgetType: WidgetType,
@@ -568,6 +567,15 @@ export const frameworks: Framework[] = [
     fileLocation: "public/index.html or component",
     description: "Create React App or custom setup",
     language: "tsx",
+  },
+  {
+    id: "wordpress",
+    name: "WordPress",
+    icon: WordPressIcon,
+    generateCode: generateWordPressCode,
+    fileLocation: "functions.php",
+    description: "WordPress Site",
+    language: "html",
   },
   {
     id: "vue",
@@ -639,15 +647,6 @@ export const frameworks: Framework[] = [
     generateCode: generateVanillaCode,
     fileLocation: "HTML file",
     description: "Plain HTML, JavaScript, or any other framework",
-    language: "html",
-  },
-  {
-    id: "wordpress",
-    name: "WordPress",
-    icon: WordPressIcon,
-    generateCode: generateWordPressCode,
-    fileLocation: "functions.php",
-    description: "WordPress Site",
     language: "html",
   },
 ];

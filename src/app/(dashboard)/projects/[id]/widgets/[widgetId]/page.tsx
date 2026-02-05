@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useWidgetContext } from "@/components/features/projects/widget-context";
 import { WidgetPreviewNew } from "@/components/features/projects/widget-preview-new";
 import { Button } from "@/components/ui/button";
-import { Edit, Code, ArrowUpRight } from "lucide-react";
+import { Edit, Zap } from "lucide-react";
 import { EditWidgetModal } from "@/components/features/projects/edit-widget-modal";
 import { EmbedCodeModal } from "@/components/features/projects/embed-code-modal";
 import { useParams } from "next/navigation";
@@ -54,8 +54,8 @@ export default function WidgetDetailPage() {
             onClick={() => setIsEmbedModalOpen(true)}
             className="gap-2"
           >
-            <Code className="w-4 h-4" />
-            Get Embed Code
+            <Zap className="w-4 h-4 fill-yellow-400 stroke-yellow-400" />
+            Install
           </Button>
         </div>
       </div>
