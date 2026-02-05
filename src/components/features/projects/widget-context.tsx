@@ -57,12 +57,13 @@ type WidgetContextType = {
     value: WidgetConfigUnified[K],
   ) => void;
   saveWidget: () => Promise<void>;
+  deleteWidget: (widgetId: string) => Promise<void>;
   createWidget: (name?: string) => Promise<void>;
   isSaving: boolean;
   hasUnsavedChanges: boolean;
   // For embed code generation
-  activeEmbedType: "popup" | "inline";
-  setActiveEmbedType: (type: "popup" | "inline") => void;
+  activeEmbedType: "popup" | "inline" | "lead-magnet";
+  setActiveEmbedType: (type: "popup" | "inline" | "lead-magnet") => void;
   selectedFramework: FrameworkId | null;
   setSelectedFramework: (framework: FrameworkId | null) => void;
   // Lead magnet state
@@ -73,6 +74,8 @@ type WidgetContextType = {
     key: K,
     value: LeadMagnetData[K],
   ) => void;
+  isCustomizerOpen: boolean;
+  setIsCustomizerOpen: (isOpen: boolean) => void;
 };
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -102,17 +105,17 @@ export function WidgetContextProvider({
   const [widgets, setWidgets] = useState<WidgetEntity[]>(initialWidgets);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
     initialWidgets.find((w) => w.isDefault)?.id ||
-      initialWidgets[0]?.id ||
-      null,
+    initialWidgets[0]?.id ||
+    null,
   );
   const [localConfig, setLocalConfig] = useState<WidgetConfigUnified | null>(
     null,
   );
   const [isSaving, startTransition] = useTransition();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [activeEmbedType, setActiveEmbedType] = useState<"popup" | "inline">(
-    "popup",
-  );
+  const [activeEmbedType, setActiveEmbedType] = useState<
+    "popup" | "inline" | "lead-magnet"
+  >("popup");
   const [selectedFramework, setSelectedFramework] =
     useState<FrameworkId | null>(null);
 
@@ -120,6 +123,8 @@ export function WidgetContextProvider({
   const [leadMagnetEnabled, setLeadMagnetEnabledState] = useState(false);
   const [localLeadMagnetData, setLocalLeadMagnetData] =
     useState<LeadMagnetData | null>(null);
+
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
 
   const selectedWidget = widgets.find((w) => w.id === selectedWidgetId) || null;
 
@@ -243,10 +248,10 @@ export function WidgetContextProvider({
           prev.map((w) =>
             w.id === selectedWidget.id
               ? {
-                  ...w,
-                  config: localConfig || w.config,
-                  leadMagnetId: newLeadMagnetId,
-                }
+                ...w,
+                config: localConfig || w.config,
+                leadMagnetId: newLeadMagnetId,
+              }
               : w,
           ),
         );
@@ -277,6 +282,26 @@ export function WidgetContextProvider({
     });
   }
 
+  async function deleteOneWidget(widgetId: string) {
+    startTransition(async () => {
+      try {
+        // Need to import deleteWidgetAction
+        const { deleteWidgetAction } = await import("@/actions/widgets");
+        await deleteWidgetAction(widgetId);
+        setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
+        if (selectedWidgetId === widgetId) {
+          // Determine new selected widget
+          const remaining = widgets.filter(w => w.id !== widgetId);
+          const next = remaining.find(w => w.isDefault) || remaining[0];
+          setSelectedWidgetId(next ? next.id : null);
+        }
+        router.refresh();
+      } catch (error) {
+        console.error("Failed to delete widget", error);
+      }
+    })
+  }
+
   return (
     <WidgetContext.Provider
       value={{
@@ -288,6 +313,7 @@ export function WidgetContextProvider({
         updateConfig,
         saveWidget,
         createWidget: createNewWidget,
+        deleteWidget: deleteOneWidget,
         isSaving,
         hasUnsavedChanges,
         activeEmbedType,
@@ -298,6 +324,8 @@ export function WidgetContextProvider({
         setLeadMagnetEnabled,
         leadMagnetData,
         updateLeadMagnetData,
+        isCustomizerOpen,
+        setIsCustomizerOpen,
       }}
     >
       {children}

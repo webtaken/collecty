@@ -1,13 +1,6 @@
 "use client";
 
 import { useWidgetContext } from "./widget-context";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,53 +40,53 @@ export function WidgetCustomizerNew() {
 
   if (!selectedWidget) {
     return (
-      <Card className="h-full">
-        <CardContent className="flex items-center justify-center h-64">
+      <div className="h-full border rounded-lg bg-white">
+        <div className="flex items-center justify-center h-64">
           <div className="text-center text-muted-foreground">
             <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-20" />
             <p>Select a widget to customize</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full overflow-hidden">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col bg-white">
+      <div className="flex-shrink-0 p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold text-slate-800">
               Customize Widget
-            </CardTitle>
-            <CardDescription className="mt-1">
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
               Adjust content, colors, and behavior
-            </CardDescription>
+            </p>
           </div>
           <Button
             onClick={saveWidget}
             disabled={isSaving || !hasUnsavedChanges}
+            size="sm"
             className={cn(
               "gap-2 transition-all",
               hasUnsavedChanges
-                ? "bg-primary hover:bg-primary/90"
+                ? "bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
                 : "bg-emerald-500 hover:bg-emerald-600",
             )}
           >
             {isSaving ? (
               <>
-                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Saving...
+                <span className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="sr-only">Saving...</span>
               </>
             ) : hasUnsavedChanges ? (
               <>
-                <Save className="h-4 w-4" />
-                Save Changes
+                <Save className="h-3.5 w-3.5" />
+                Save
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-4 w-4" />
+                <CheckCircle2 className="h-3.5 w-3.5" />
                 Saved
               </>
             )}
@@ -101,61 +94,47 @@ export function WidgetCustomizerNew() {
         </div>
 
         {/* Embed Type Toggle */}
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
           <button
             onClick={() => setActiveEmbedType("popup")}
             className={cn(
-              "flex-1 px-4 py-3 rounded-xl border-2 transition-all",
-              "flex items-center justify-center gap-2 font-medium text-sm",
+              "flex-1 px-3 py-2 rounded-md transition-all text-xs font-medium flex items-center justify-center gap-2",
               activeEmbedType === "popup"
-                ? "border-primary bg-primary/5 text-primary"
-                : "border-slate-200 text-slate-500 hover:border-slate-300",
+                ? "bg-white text-orange-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
             )}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-              />
-            </svg>
-            Popup Preview
+            Popup
           </button>
           <button
             onClick={() => setActiveEmbedType("inline")}
             className={cn(
-              "flex-1 px-4 py-3 rounded-xl border-2 transition-all",
-              "flex items-center justify-center gap-2 font-medium text-sm",
+              "flex-1 px-3 py-2 rounded-md transition-all text-xs font-medium flex items-center justify-center gap-2",
               activeEmbedType === "inline"
-                ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                : "border-slate-200 text-slate-500 hover:border-slate-300",
+                ? "bg-white text-orange-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
             )}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"
-              />
-            </svg>
-            Inline Preview
+            Inline
           </button>
-        </div>
-      </CardHeader>
 
-      <CardContent className="space-y-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+          {leadMagnetEnabled && (
+            <button
+              onClick={() => setActiveEmbedType("lead-magnet")}
+              className={cn(
+                "flex-1 px-3 py-2 rounded-md transition-all text-xs font-medium flex items-center justify-center gap-2",
+                activeEmbedType === "lead-magnet"
+                  ? "bg-white text-orange-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              Lead Magnet
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <Tabs defaultValue="content" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="content" className="gap-2">
@@ -227,7 +206,7 @@ export function WidgetCustomizerNew() {
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
               <div>
                 <Label>Enable Lead Magnet</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -299,8 +278,8 @@ export function WidgetCustomizerNew() {
             {/* Popup-specific settings - only show when popup is active */}
             {activeEmbedType === "popup" && (
               <>
-                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
-                  <p className="text-sm text-indigo-800">
+                <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg">
+                  <p className="text-sm text-orange-800">
                     <span className="font-medium">Popup settings</span> control
                     how and when the modal appears
                   </p>
@@ -352,34 +331,34 @@ export function WidgetCustomizerNew() {
 
                 {(config.triggerType === "delay" ||
                   config.triggerType === "scroll") && (
-                  <div className="space-y-2">
-                    <Label>
-                      {config.triggerType === "delay"
-                        ? "Delay (seconds)"
-                        : "Scroll Percentage"}
-                    </Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={config.triggerType === "scroll" ? 100 : 3600}
-                      value={config.triggerValue || 3}
-                      onChange={(e) =>
-                        updateConfig(
-                          "triggerValue",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
-                    />
-                  </div>
-                )}
+                    <div className="space-y-2">
+                      <Label>
+                        {config.triggerType === "delay"
+                          ? "Delay (seconds)"
+                          : "Scroll Percentage"}
+                      </Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={config.triggerType === "scroll" ? 100 : 3600}
+                        value={config.triggerValue || 3}
+                        onChange={(e) =>
+                          updateConfig(
+                            "triggerValue",
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
+                      />
+                    </div>
+                  )}
               </>
             )}
 
             {/* Inline-specific settings */}
             {activeEmbedType === "inline" && (
               <>
-                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-lg">
-                  <p className="text-sm text-emerald-800">
+                <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg">
+                  <p className="text-sm text-orange-800">
                     <span className="font-medium">Inline settings</span> control
                     the form layout
                   </p>
@@ -406,8 +385,8 @@ export function WidgetCustomizerNew() {
             )}
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </div>
+    </div >
   );
 }
 

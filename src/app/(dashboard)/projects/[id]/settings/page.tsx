@@ -1,16 +1,8 @@
 import { auth } from "@/lib/auth";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getProjectWithStats } from "@/actions/projects";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ProjectSettingsForm } from "@/components/features/projects/project-settings-form";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ProjectSettingsForm } from "./project-settings-form";
 
 export default async function ProjectSettingsPage({
   params,
@@ -19,45 +11,24 @@ export default async function ProjectSettingsPage({
 }) {
   const session = await auth();
   const { id } = await params;
-  const project = await getProjectWithStats(id, session!.user!.id!);
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const project = await getProjectWithStats(id, session.user.id);
 
   if (!project) {
     notFound();
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`/projects/${project.id}`}>
-          <Button variant="ghost" size="icon">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Project Settings
-          </h1>
-          <p className="text-slate-600">{project.name}</p>
-        </div>
-      </div>
-
+    <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>General Settings</CardTitle>
+          <CardTitle>Project Settings</CardTitle>
           <CardDescription>
-            Update your project details and configuration
+            Manage your project details and configuration
           </CardDescription>
         </CardHeader>
         <CardContent>
