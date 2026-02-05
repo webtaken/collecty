@@ -10,6 +10,7 @@ import {
   NuxtIcon,
   LaravelIcon,
   VanillaIcon,
+  WordPressIcon,
 } from "@/components/icons/frameworks";
 
 export type FrameworkId =
@@ -22,7 +23,8 @@ export type FrameworkId =
   | "remix"
   | "nuxt"
   | "laravel"
-  | "vanilla";
+  | "vanilla"
+  | "wordpress";
 
 export type WidgetType = "popup" | "inline";
 
@@ -517,6 +519,37 @@ const generateVanillaCode = (
   }
 };
 
+
+const generateWordPressCode = (
+  projectId: string,
+  widgetType: WidgetType,
+  appUrl: string,
+): string => {
+  if (widgetType === "popup") {
+    return `//Collecty PopUp on WordPress
+add_action('wp_footer', 'collecty_widget_loader', 999);
+function collecty_widget_loader() {
+?>
+<script>
+(function(c,o,l,e,t,y){
+    c.collecty = c.collecty || function(){
+        (c.collecty.q = c.collecty.q || []).push(arguments)
+    };
+    var s = o.createElement("script");
+    s.async = 1;
+    s.src = l;
+    o.head.appendChild(s);
+})(window, document, "${appUrl}/widget/${projectId}/popup.js");
+</script>
+<?php
+}`;
+  } else {
+    return `<!-- Add a "Custom HTML" block in the Gutenberg editor -->
+<div data-collecty-inline="${projectId}"></div>
+<script src="${appUrl}/widget/${projectId}/inline.js" async></script>`;
+  }
+};
+
 export const frameworks: Framework[] = [
   {
     id: "nextjs",
@@ -606,6 +639,15 @@ export const frameworks: Framework[] = [
     generateCode: generateVanillaCode,
     fileLocation: "HTML file",
     description: "Plain HTML, JavaScript, or any other framework",
+    language: "html",
+  },
+  {
+    id: "wordpress",
+    name: "WordPress",
+    icon: WordPressIcon,
+    generateCode: generateWordPressCode,
+    fileLocation: "functions.php",
+    description: "WordPress Site",
     language: "html",
   },
 ];

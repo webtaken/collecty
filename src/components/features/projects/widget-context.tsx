@@ -62,8 +62,8 @@ type WidgetContextType = {
   isSaving: boolean;
   hasUnsavedChanges: boolean;
   // For embed code generation
-  activeEmbedType: "popup" | "inline";
-  setActiveEmbedType: (type: "popup" | "inline") => void;
+  activeEmbedType: "popup" | "inline" | "lead-magnet";
+  setActiveEmbedType: (type: "popup" | "inline" | "lead-magnet") => void;
   selectedFramework: FrameworkId | null;
   setSelectedFramework: (framework: FrameworkId | null) => void;
   // Lead magnet state
@@ -74,6 +74,8 @@ type WidgetContextType = {
     key: K,
     value: LeadMagnetData[K],
   ) => void;
+  isCustomizerOpen: boolean;
+  setIsCustomizerOpen: (isOpen: boolean) => void;
 };
 
 const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
@@ -111,9 +113,9 @@ export function WidgetContextProvider({
   );
   const [isSaving, startTransition] = useTransition();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [activeEmbedType, setActiveEmbedType] = useState<"popup" | "inline">(
-    "popup",
-  );
+  const [activeEmbedType, setActiveEmbedType] = useState<
+    "popup" | "inline" | "lead-magnet"
+  >("popup");
   const [selectedFramework, setSelectedFramework] =
     useState<FrameworkId | null>(null);
 
@@ -121,6 +123,8 @@ export function WidgetContextProvider({
   const [leadMagnetEnabled, setLeadMagnetEnabledState] = useState(false);
   const [localLeadMagnetData, setLocalLeadMagnetData] =
     useState<LeadMagnetData | null>(null);
+
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
 
   const selectedWidget = widgets.find((w) => w.id === selectedWidgetId) || null;
 
@@ -320,6 +324,8 @@ export function WidgetContextProvider({
         setLeadMagnetEnabled,
         leadMagnetData,
         updateLeadMagnetData,
+        isCustomizerOpen,
+        setIsCustomizerOpen,
       }}
     >
       {children}

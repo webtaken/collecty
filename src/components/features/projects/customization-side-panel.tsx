@@ -94,7 +94,7 @@ export function CustomizationSidePanel() {
                                     </div>
                                 </div>
                                 <div className="flex-1 p-8 flex items-center justify-center bg-slate-50/30">
-                                    <WidgetPreviewNew isPlain={true} />
+                                    <WidgetPreviewNew hideLabels={true} />
                                 </div>
                                 <div className="p-4 bg-white/50 border-t text-center">
                                     <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">

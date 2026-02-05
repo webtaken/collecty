@@ -1,14 +1,9 @@
 "use client";
-import type { SVGProps } from "react";
 
-const WordPressIcon = (props: SVGProps<SVGSVGElement>) => (
+export const WordPressIcon = ({ className }: { className?: string }) => (
     <img
         src="https://cdn.simpleicons.org/wordpress"
         alt="WordPress"
-        width={props.width || 24}
-        height={props.height || 24}
-        className={props.className}
+        className={className}
     />
 );
-
-export { WordPressIcon };

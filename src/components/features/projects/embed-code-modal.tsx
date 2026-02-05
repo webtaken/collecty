@@ -11,7 +11,7 @@ interface EmbedCodeModalProps {
 export function EmbedCodeModal({ open, onOpenChange }: EmbedCodeModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw] w-[80vw] min-w-[800px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="!max-w-7xl min-w-[1024px] w-full h-[85vh] p-0 overflow-hidden bg-slate-50 flex flex-col">
                 <WidgetInstallNew />
             </DialogContent>
         </Dialog>

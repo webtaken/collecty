@@ -9,3 +9,4 @@ export { NuxtIcon } from "./nuxt-icon";
 export { LaravelIcon } from "./laravel-icon";
 export { VanillaIcon } from "./vanilla-icon";
 
+export { WordPressIcon } from "./wordpress-icon";

@@ -117,6 +117,20 @@ export function WidgetCustomizerNew() {
           >
             Inline
           </button>
+
+          {leadMagnetEnabled && (
+            <button
+              onClick={() => setActiveEmbedType("lead-magnet")}
+              className={cn(
+                "flex-1 px-3 py-2 rounded-md transition-all text-xs font-medium flex items-center justify-center gap-2",
+                activeEmbedType === "lead-magnet"
+                  ? "bg-white text-orange-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              Lead Magnet
+            </button>
+          )}
         </div>
       </div>
 
@@ -372,7 +386,7 @@ export function WidgetCustomizerNew() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </div >
   );
 }
 

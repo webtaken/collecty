@@ -9,8 +9,21 @@ import { RichTextEditor } from "@/components/features/lead-magnets/rich-text-edi
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Gift } from "lucide-react";
+import { useEffect } from "react";
 
-export function WidgetPreviewNew() {
+interface WidgetPreviewNewProps {
+  activeTypeOverride?: "popup" | "inline" | "lead-magnet";
+  onTypeChangeOverride?: (type: "popup" | "inline" | "lead-magnet") => void;
+  hideLabels?: boolean;
+  hideTabs?: boolean;
+}
+
+export function WidgetPreviewNew({
+  activeTypeOverride,
+  onTypeChangeOverride,
+  hideLabels = false,
+  hideTabs = false,
+}: WidgetPreviewNewProps) {
   const {
     config,
     activeEmbedType,
@@ -25,7 +38,17 @@ export function WidgetPreviewNew() {
     "popup" | "inline" | "lead-magnet"
   >("popup");
 
-  const isPopup = activeEmbedType === "popup";
+  // Determine current active type
+  const currentActiveType = activeTypeOverride || activeEmbedType;
+
+  // Sync internal state with context when not overridden
+  useEffect(() => {
+    if (!activeTypeOverride && activeEmbedType) {
+      setActiveTab(activeEmbedType);
+    }
+  }, [activeEmbedType, activeTypeOverride]);
+
+  const isPopup = currentActiveType === "popup";
 
   return (
     <Card className="overflow-hidden border-0 shadow-none bg-transparent">
@@ -42,37 +65,46 @@ export function WidgetPreviewNew() {
 
           {/* Live preview area */}
           <Tabs
-            value={activeTab}
+            value={activeTypeOverride ? activeTypeOverride : activeTab}
             onValueChange={(value) => {
               const tab = value as "popup" | "inline" | "lead-magnet";
-              setActiveTab(tab);
-              if (tab !== "lead-magnet") {
-                setActiveEmbedType(tab);
+
+              if (onTypeChangeOverride) {
+                onTypeChangeOverride(tab);
+                return;
               }
+
+              setActiveTab(tab);
+              setActiveEmbedType(tab);
             }}
           >
-            <TabsList className="bg-white/50 border border-slate-200">
-              <TabsTrigger value="popup">Popup Widget</TabsTrigger>
-              <TabsTrigger value="inline">Inline Form</TabsTrigger>
-              {leadMagnetEnabled && (
-                <TabsTrigger value="lead-magnet" className="gap-1.5">
-                  <Gift className="h-3.5 w-3.5" />
-                  Lead Magnet
-                </TabsTrigger>
-              )}
-            </TabsList>
+            {/* Only show tabs if not hidden */}
+            {!hideTabs && (
+              <TabsList className="bg-white/50 border border-slate-200">
+                <TabsTrigger value="popup">Popup Widget</TabsTrigger>
+                <TabsTrigger value="inline">Inline Form</TabsTrigger>
+                {!activeTypeOverride && leadMagnetEnabled && (
+                  <TabsTrigger value="lead-magnet" className="gap-1.5">
+                    <Gift className="h-3.5 w-3.5" />
+                    Lead Magnet
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            )}
             <TabsContent value="popup">
               {/* Popup Preview */}
               <div className="relative flex items-center justify-center min-h-[280px] p-6">
-                <div
-                  className={cn(
-                    "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-                    "bg-indigo-100 text-indigo-700",
-                  )}
-                >
-                  <Sparkles className="h-3 w-3" />
-                  Live Preview
-                </div>
+                {!hideLabels && (
+                  <div
+                    className={cn(
+                      "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+                      "bg-indigo-100 text-indigo-700",
+                    )}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Live Preview
+                  </div>
+                )}
                 <div
                   className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-transform hover:scale-[1.02]"
                   style={{ backgroundColor: config.backgroundColor }}
@@ -124,15 +156,17 @@ export function WidgetPreviewNew() {
             </TabsContent>
             <TabsContent value="inline">
               <div className="relative p-6 min-h-[200px]">
-                <div
-                  className={cn(
-                    "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-                    "bg-emerald-100 text-emerald-700",
-                  )}
-                >
-                  <Sparkles className="h-3 w-3" />
-                  Live Preview
-                </div>
+                {!hideLabels && (
+                  <div
+                    className={cn(
+                      "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+                      "bg-emerald-100 text-emerald-700",
+                    )}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Live Preview
+                  </div>
+                )}
                 <div
                   className="mx-auto max-w-lg overflow-hidden"
                   style={{
@@ -196,15 +230,17 @@ export function WidgetPreviewNew() {
             {leadMagnetEnabled && (
               <TabsContent value="lead-magnet">
                 <div className="relative p-6 min-h-[200px]">
-                  <div
-                    className={cn(
-                      "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
-                      "bg-purple-100 text-purple-700",
-                    )}
-                  >
-                    <Gift className="h-3 w-3" />
-                    Lead Magnet Editor
-                  </div>
+                  {!hideLabels && (
+                    <div
+                      className={cn(
+                        "absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+                        "bg-purple-100 text-purple-700",
+                      )}
+                    >
+                      <Gift className="h-3 w-3" />
+                      Lead Magnet Editor
+                    </div>
+                  )}
                   <div className="space-y-4 max-w-lg mx-auto">
                     <div className="space-y-2">
                       <Label htmlFor="lm-preview">Preview Text</Label>
