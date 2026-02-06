@@ -30,7 +30,7 @@ export default function LandingPage() {
                 c.collecty=c.collecty||function(){(c.collecty.q=c.collecty.q||[]).push(arguments)};
                 var s=o.createElement('script');s.async=1;s.src=l;
                 o.head.appendChild(s);
-              })(window,document,'https://collecty.dev/widget/d0d5f429-4496-421f-a790-1929c3327017/popup.js');
+              })(window,document,'http://localhost:3000/widget/d0d5f429-4496-421f-a790-1929c3327017/popup.js');
             `,
         }}
       />

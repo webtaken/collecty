@@ -12,18 +12,27 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
-import { Check, Copy, Code, FileCode, ExternalLink, Info } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Code,
+  FileCode,
+  ExternalLink,
+  Info,
+  Sparkles,
+} from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   frameworks,
   getFrameworkById,
-  type FrameworkId,
+  generateAIPrompt,
 } from "@/lib/frameworks/install-code-generator";
 
 export function WidgetInstallNew() {
   const {
     selectedWidget,
+    config,
     activeEmbedType,
     selectedFramework,
     setSelectedFramework,
@@ -37,6 +46,21 @@ export function WidgetInstallNew() {
     await navigator.clipboard.writeText(text);
     setCopiedType(type);
     setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const handleCopyAIPrompt = async () => {
+    if (!framework || !selectedWidget) return;
+    try {
+      const prompt = generateAIPrompt(
+        framework.id,
+        selectedWidget.id,
+        activeEmbedType as any,
+        appUrl,
+      );
+      await handleCopy(prompt, "ai-prompt");
+    } catch (err) {
+      console.error("Failed to generate prompt", err);
+    }
   };
 
   // Get selected framework info
@@ -102,6 +126,14 @@ export function CollectyInlineWidget() {
 
   return <div ref={containerRef} data-collecty-inline="${widgetId}" />;
 }`;
+
+  const manualTriggerCode = `<!-- Trigger the popup manually -->
+<button onclick="window.collecty('show')">Open Popup</button>
+
+<!-- Or call it from your script -->
+<script>
+  window.collecty('show');
+</script>`;
 
   if (!selectedWidget) {
     return (
@@ -232,7 +264,7 @@ export function CollectyInlineWidget() {
       {/* Right Content - Instructions */}
       <div className="flex-1 flex flex-col min-w-0 bg-white h-full overflow-hidden">
         {/* Fixed Header */}
-        <div className="border-b border-slate-100 flex-shrink-0 bg-white z-20">
+        <div className="border-b border-slate-100 shrink-0 bg-white z-20">
           <div className="px-10 py-6 max-w-5xl mx-auto w-full">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Code className="h-5 w-5 text-primary" />
@@ -249,8 +281,8 @@ export function CollectyInlineWidget() {
           <div className="px-10 py-8 max-w-5xl mx-auto space-y-8 w-full">
             {/* Framework specific notice */}
             {framework && (
-              <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-100 rounded-xl">
-                <Info className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-100 rounded-xl">
+                <Info className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-orange-900">
                     {framework.name} Installation Instructions
@@ -309,6 +341,69 @@ export function CollectyInlineWidget() {
               </div>
             )}
 
+            {/* AI Prompt Section */}
+            {framework && framework.id !== "wordpress" && (
+              <div className="relative overflow-hidden rounded-xl border border-purple-500/20 bg-slate-950 p-6 shadow-2xl shadow-purple-500/10 mb-8 group">
+                {/* Background Effects */}
+                <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 via-transparent to-pink-500/5 transition-opacity group-hover:opacity-100 opacity-50" />
+                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl transition-all duration-500 group-hover:bg-purple-500/20" />
+                <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-pink-500/10 blur-3xl transition-all duration-500 group-hover:bg-pink-500/20" />
+
+                <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-5 items-start">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20 ring-1 ring-white/10">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        Ask AI to install
+                        <span className="inline-flex items-center rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-300 ring-1 ring-inset ring-purple-500/20">
+                          Beta
+                        </span>
+                      </h3>
+                      <p className="text-sm text-slate-400 max-w-md leading-relaxed">
+                        Copy a detailed prompt optimized for{" "}
+                        <span className="text-purple-300 font-medium">
+                          Cursor
+                        </span>
+                        ,{" "}
+                        <span className="text-pink-300 font-medium">
+                          Windsurf
+                        </span>
+                        , or{" "}
+                        <span className="text-indigo-300 font-medium">
+                          Lovable
+                        </span>{" "}
+                        to let AI handle the setup for you.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleCopyAIPrompt}
+                    className={cn(
+                      "shrink-0 gap-2 font-medium transition-all duration-300",
+                      copiedType === "ai-prompt"
+                        ? "bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/20"
+                        : "bg-white text-slate-950 hover:bg-slate-100 shadow-lg shadow-white/5 hover:shadow-cyan-500/20 hover:scale-105",
+                    )}
+                  >
+                    {copiedType === "ai-prompt" ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4" />
+                        Copy Prompt
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <Tabs
               defaultValue={activeEmbedType === "popup" ? "popup" : "inline"}
               className="w-full"
@@ -348,7 +443,7 @@ export function CollectyInlineWidget() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="popup" className="space-y-6 mt-0">
+              <TabsContent value="popup" className="space-y-4 mt-0">
                 {/* Show framework-specific code first if framework is selected */}
                 {framework && frameworkPopupCode && (
                   <CodeBlock
@@ -364,6 +459,37 @@ export function CollectyInlineWidget() {
                   />
                 )}
 
+                {/* Manual Trigger Instructions */}
+                {(config as any)?.triggerType === "click" && (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                      <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">
+                          Manual Trigger Active
+                        </p>
+                        <p className="text-xs text-blue-700 mt-0.5">
+                          Since you selected "Manual Click" as the trigger, the
+                          popup won't show automatically. You need to trigger it
+                          programmatically.
+                        </p>
+                      </div>
+                    </div>
+
+                    <CodeBlock
+                      title="Manual Trigger"
+                      description="Use this code to trigger the popup when a user clicks a button"
+                      code={manualTriggerCode}
+                      language="html"
+                      onCopy={() =>
+                        handleCopy(manualTriggerCode, "manual-trigger")
+                      }
+                      copied={copiedType === "manual-trigger"}
+                      highlighted
+                    />
+                  </div>
+                )}
+
                 {/* Show generic options */}
                 <div className={framework ? "opacity-60" : ""}>
                   {framework && (
@@ -371,7 +497,7 @@ export function CollectyInlineWidget() {
                       Alternative Options
                     </p>
                   )}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <CodeBlock
                       title="HTML Script Tag"
                       description="Add this before your closing </body> tag"
@@ -395,7 +521,7 @@ export function CollectyInlineWidget() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="inline" className="space-y-6 mt-0">
+              <TabsContent value="inline" className="space-y-4 mt-0">
                 {/* Show framework-specific code first if framework is selected */}
                 {framework && frameworkInlineCode && (
                   <CodeBlock
@@ -418,7 +544,7 @@ export function CollectyInlineWidget() {
                       Alternative Options
                     </p>
                   )}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <CodeBlock
                       title="HTML Script Tag"
                       description="Add the container where you want the form, plus the script"
@@ -483,62 +609,62 @@ function CodeBlock({
   return (
     <div
       className={cn(
-        "space-y-2 p-4 rounded-xl transition-all",
+        "rounded-lg overflow-hidden border transition-all",
         highlighted
-          ? "bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200"
-          : "bg-white",
+          ? "border-orange-200 bg-orange-50/50"
+          : "border-slate-200 bg-white",
       )}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className={cn("font-medium", highlighted && "text-orange-900")}>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="text-xs font-semibold text-slate-700 truncate">
             {title}
-          </h3>
-          <p
-            className={cn(
-              "text-xs",
-              highlighted ? "text-orange-700" : "text-muted-foreground",
-            )}
-          >
-            {description}
-          </p>
+          </span>
+          {description && (
+            <>
+              <span className="text-slate-300 text-[10px]">•</span>
+              <span
+                className="text-[10px] text-slate-500 truncate max-w-[300px]"
+                title={description}
+              >
+                {description}
+              </span>
+            </>
+          )}
         </div>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={onCopy}
           className={cn(
-            "gap-2 transition-all",
-            copied && "bg-orange-50 border-orange-200 text-orange-700",
+            "h-6 px-2 text-[10px] gap-1.5 hover:bg-slate-200/50 text-slate-500",
+            copied && "text-green-600 bg-green-50 hover:bg-green-100",
           )}
         >
           {copied ? (
             <>
-              <Check className="h-4 w-4" />
-              Copied!
+              <Check className="h-3 w-3" />
+              Copied
             </>
           ) : (
             <>
-              <Copy className="h-4 w-4" />
+              <Copy className="h-3 w-3" />
               Copy
             </>
           )}
         </Button>
       </div>
-      <div
-        className={cn(
-          "rounded-lg overflow-hidden w-full max-w-full",
-          highlighted ? "border-2 border-orange-300" : "border",
-        )}
-      >
+      <div className="relative group">
         <SyntaxHighlighter
           language={language}
           style={vscDarkPlus}
           customStyle={{
             margin: 0,
-            padding: "1rem",
-            fontSize: "0.8rem",
-            borderRadius: "0.5rem",
+            padding: "0.75rem",
+            fontSize: "0.75rem",
+            lineHeight: "1.4",
+            borderRadius: "0",
+            background: "#1e1e1e",
           }}
           wrapLines={true}
           wrapLongLines={true}
