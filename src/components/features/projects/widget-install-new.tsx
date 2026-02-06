@@ -49,10 +49,10 @@ export function WidgetInstallNew() {
   };
 
   const handleCopyAIPrompt = async () => {
-    if (!framework || !selectedWidget) return;
+    if (!selectedWidget) return;
     try {
       const prompt = generateAIPrompt(
-        framework.id,
+        framework ? framework.id : "vanilla",
         selectedWidget.id,
         activeEmbedType as any,
         appUrl,
@@ -342,7 +342,7 @@ export function CollectyInlineWidget() {
             )}
 
             {/* AI Prompt Section */}
-            {framework && framework.id !== "wordpress" && (
+            {framework?.id !== "wordpress" && (
               <div className="relative overflow-hidden rounded-xl border border-purple-500/20 bg-slate-950 p-6 shadow-2xl shadow-purple-500/10 mb-8 group">
                 {/* Background Effects */}
                 <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 via-transparent to-pink-500/5 transition-opacity group-hover:opacity-100 opacity-50" />
@@ -410,35 +410,9 @@ export function CollectyInlineWidget() {
             >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="popup" className="gap-2">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                    />
-                  </svg>
                   Popup Widget
                 </TabsTrigger>
                 <TabsTrigger value="inline" className="gap-2">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"
-                    />
-                  </svg>
                   Inline Form
                 </TabsTrigger>
               </TabsList>
