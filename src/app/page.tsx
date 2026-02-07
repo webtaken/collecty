@@ -14,8 +14,9 @@ import {
   VanillaIcon,
 } from "@/components/icons/frameworks";
 import Script from "next/script";
-import { WidgetPreview } from "@/components/landing/widget-preview";
+import { LandingDemoVideos } from "@/components/landing/landing-demo-videos";
 import { LogoCarousel } from "@/components/ui/logo-carousel";
+import CollectyForm from "@/components/landing/collecty-form";
 
 export default function LandingPage() {
   return (
@@ -89,9 +90,7 @@ export default function LandingPage() {
             style={{ animationDelay: "0.1s", animationFillMode: "forwards" }}
           >
             <span className="w-2 h-2 bg-[oklch(0.72_0.16_160)] rounded-full animate-pulse" />
-            <span className="text-sm text-white/70">
-              New: Inline Forms & Framework Support
-            </span>
+            <span className="text-sm text-white/70">New: Lead Magnets</span>
           </div>
 
           <h1
@@ -99,7 +98,7 @@ export default function LandingPage() {
             style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}
           >
             Grow your email list{" "}
-            <span className="bg-gradient-to-r from-[oklch(0.68_0.19_18)] via-[oklch(0.75_0.15_55)] to-[oklch(0.72_0.16_160)] text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-[oklch(0.68_0.19_18)] via-[oklch(0.75_0.15_55)] to-[oklch(0.72_0.16_160)] text-transparent bg-clip-text">
               effortlessly
             </span>
           </h1>
@@ -112,44 +111,10 @@ export default function LandingPage() {
             visitors into subscribers. Set up in minutes, embed anywhere with a
             single line of code.
           </p>
-
-          <div
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up"
-            style={{ animationDelay: "0.5s", animationFillMode: "forwards" }}
-          >
-            <Link href="/login">
-              <Button
-                size="lg"
-                className="bg-[oklch(0.68_0.19_18)] hover:bg-[oklch(0.63_0.19_18)] text-lg px-8 py-6 h-auto shadow-xl shadow-[oklch(0.68_0.19_18)]/25 transition-all hover:shadow-2xl hover:shadow-[oklch(0.68_0.19_18)]/30 hover:-translate-y-0.5"
-              >
-                Start Collecting Emails
-                <svg
-                  className="w-5 h-5 ml-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </Button>
-            </Link>
-          </div>
-
-          <p
-            className="text-sm text-white/40 mt-6 opacity-0 animate-fade-in"
-            style={{ animationDelay: "0.65s", animationFillMode: "forwards" }}
-          >
-            Free forever for up to 1,000 subscribers. No credit card required.
-          </p>
         </div>
 
-        {/* Widget Preview */}
-        <WidgetPreview />
+        {/* Widget Preview / Demo Videos */}
+        <LandingDemoVideos />
       </section>
 
       {/* Frameworks Section */}
@@ -427,6 +392,32 @@ export default function LandingPage() {
                 <p className="text-white/50">{item.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Demo Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[oklch(0.68_0.19_18)]/5 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="max-w-3xl mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 font-[family-name:var(--font-outfit)]">
+              See it in action
+            </h2>
+            <p className="text-white/50 text-lg">
+              This is a real Collecty inline form. Subscribe to receive updates
+              about our journey!
+            </p>
+          </div>
+
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-linear-to-r from-[oklch(0.68_0.19_18)] to-[oklch(0.72_0.16_160)] rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500" />
+            <div className="relative bg-white/3 backdrop-blur-xl border border-white/10 rounded-2xl p-8 sm:p-12">
+              <CollectyForm />
+            </div>
           </div>
         </div>
       </section>
