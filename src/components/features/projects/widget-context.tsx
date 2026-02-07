@@ -327,17 +327,25 @@ export function WidgetContextProvider({
         updateLeadMagnetData,
         updateWidgetName: async (name: string) => {
           if (!selectedWidget) return;
+
+          // Optimistic update
+          const oldName = selectedWidget.name;
+          setWidgets((prev) =>
+            prev.map((w) => (w.id === selectedWidget.id ? { ...w, name } : w)),
+          );
+
           startTransition(async () => {
             try {
               await updateWidgetAction(selectedWidget.id, { name });
-              setWidgets((prev) =>
-                prev.map((w) =>
-                  w.id === selectedWidget.id ? { ...w, name } : w,
-                ),
-              );
               router.refresh();
             } catch (error) {
               console.error("Failed to update widget name:", error);
+              // Revert optimistic update on error
+              setWidgets((prev) =>
+                prev.map((w) =>
+                  w.id === selectedWidget.id ? { ...w, name: oldName } : w,
+                ),
+              );
             }
           });
         },
