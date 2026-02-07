@@ -74,6 +74,7 @@ type WidgetContextType = {
     key: K,
     value: LeadMagnetData[K],
   ) => void;
+  updateWidgetName: (name: string) => Promise<void>;
   isCustomizerOpen: boolean;
   setIsCustomizerOpen: (isOpen: boolean) => void;
 };
@@ -105,8 +106,8 @@ export function WidgetContextProvider({
   const [widgets, setWidgets] = useState<WidgetEntity[]>(initialWidgets);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
     initialWidgets.find((w) => w.isDefault)?.id ||
-    initialWidgets[0]?.id ||
-    null,
+      initialWidgets[0]?.id ||
+      null,
   );
   const [localConfig, setLocalConfig] = useState<WidgetConfigUnified | null>(
     null,
@@ -248,10 +249,10 @@ export function WidgetContextProvider({
           prev.map((w) =>
             w.id === selectedWidget.id
               ? {
-                ...w,
-                config: localConfig || w.config,
-                leadMagnetId: newLeadMagnetId,
-              }
+                  ...w,
+                  config: localConfig || w.config,
+                  leadMagnetId: newLeadMagnetId,
+                }
               : w,
           ),
         );
@@ -291,15 +292,15 @@ export function WidgetContextProvider({
         setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
         if (selectedWidgetId === widgetId) {
           // Determine new selected widget
-          const remaining = widgets.filter(w => w.id !== widgetId);
-          const next = remaining.find(w => w.isDefault) || remaining[0];
+          const remaining = widgets.filter((w) => w.id !== widgetId);
+          const next = remaining.find((w) => w.isDefault) || remaining[0];
           setSelectedWidgetId(next ? next.id : null);
         }
         router.refresh();
       } catch (error) {
         console.error("Failed to delete widget", error);
       }
-    })
+    });
   }
 
   return (
@@ -324,6 +325,22 @@ export function WidgetContextProvider({
         setLeadMagnetEnabled,
         leadMagnetData,
         updateLeadMagnetData,
+        updateWidgetName: async (name: string) => {
+          if (!selectedWidget) return;
+          startTransition(async () => {
+            try {
+              await updateWidgetAction(selectedWidget.id, { name });
+              setWidgets((prev) =>
+                prev.map((w) =>
+                  w.id === selectedWidget.id ? { ...w, name } : w,
+                ),
+              );
+              router.refresh();
+            } catch (error) {
+              console.error("Failed to update widget name:", error);
+            }
+          });
+        },
         isCustomizerOpen,
         setIsCustomizerOpen,
       }}

@@ -10,9 +10,12 @@ import { EmbedCodeModal } from "@/components/features/projects/embed-code-modal"
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
+import { InlineEditableText } from "@/components/ui/inline-editable-text";
+
 export default function WidgetDetailPage() {
   const params = useParams();
-  const { selectWidget, selectedWidget, activeEmbedType } = useWidgetContext();
+  const { selectWidget, selectedWidget, activeEmbedType, updateWidgetName } =
+    useWidgetContext();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
 
@@ -34,7 +37,12 @@ export default function WidgetDetailPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">
-            {selectedWidget.name}
+            <InlineEditableText
+              value={selectedWidget.name}
+              onSave={updateWidgetName}
+              className="hover:underline decoration-slate-300 underline-offset-4"
+              inputClassName="text-2xl font-bold bg-transparent border-none p-0 focus:ring-0"
+            />
           </h2>
           <p className="text-sm text-slate-500">
             {previewType === "popup" ? "Popup Widget" : "Inline Form"}
