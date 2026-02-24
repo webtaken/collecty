@@ -46,7 +46,7 @@ export default async function ProjectLayout({
   }));
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-slate-50/50">
+    <div className="flex h-[calc(100vh-4rem)] -mt-6 -mb-6 -mx-4 lg:-mx-8 overflow-hidden bg-slate-50/50">
       <WidgetContextProvider
         projectId={project.id}
         initialWidgets={widgetEntities}
@@ -61,7 +61,7 @@ export default async function ProjectLayout({
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <main className="flex-1 overflow-y-auto scrollbar-hide">
+          <main className="flex-1 overflow-y-auto">
             <div className="container max-w-6xl mx-auto p-6 space-y-6">
               <ProjectHeader project={project} />
               {children}
