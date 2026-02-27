@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { projects } from "./projects";
-
+import { widgets } from "./widgets";
 export type SubscriberMetadata = {
   userAgent?: string;
   referrer?: string;
@@ -49,6 +49,9 @@ export const subscribers = pgTable(
     projectId: uuid("project_id")
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
+    widgetId: uuid("widget_id").references(() => widgets.id, {
+      onDelete: "set null",
+    }),
     email: varchar("email", { length: 255 }).notNull(),
     metadata: jsonb("metadata").$type<SubscriberMetadata>().default({}),
     source: varchar("source", { length: 100 }).default("widget"),
@@ -67,5 +70,9 @@ export const subscribersRelations = relations(subscribers, ({ one }) => ({
   project: one(projects, {
     fields: [subscribers.projectId],
     references: [projects.id],
+  }),
+  widget: one(widgets, {
+    fields: [subscribers.widgetId],
+    references: [widgets.id],
   }),
 }));

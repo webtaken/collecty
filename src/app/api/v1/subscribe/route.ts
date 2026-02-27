@@ -9,6 +9,7 @@ import type { SubscriberMetadata } from "@/db/schema/subscribers";
 const subscribeSchema = z.object({
   email: z.email("Invalid email address"),
   projectId: z.uuid("Invalid project ID"),
+  widgetId: z.string().uuid("Invalid widget ID").optional(),
   metadata: z
     .object({
       userAgent: z.string().optional(),
@@ -178,6 +179,7 @@ export async function POST(request: NextRequest) {
     // Insert new subscriber
     await db.insert(subscribers).values({
       projectId: validated.projectId,
+      widgetId: validated.widgetId || null,
       email: validated.email.toLowerCase(),
       metadata: enrichedMetadata,
       source: "widget",
