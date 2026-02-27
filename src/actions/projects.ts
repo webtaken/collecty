@@ -294,12 +294,23 @@ export async function getProjectWithStats(projectId: string, userId: string) {
     .from(subscribers)
     .where(eq(subscribers.projectId, projectId));
 
-  const recentSubscribers = await db
-    .select()
+  const recentSubscribersRaw = await db
+    .select({
+      subscriber: subscribers,
+      widgetName: widgets.name,
+    })
     .from(subscribers)
+    .leftJoin(widgets, eq(subscribers.widgetId, widgets.id))
     .where(eq(subscribers.projectId, projectId))
     .orderBy(desc(subscribers.subscribedAt))
     .limit(10);
+
+  const recentSubscribers = recentSubscribersRaw.map(
+    ({ subscriber, widgetName }) => ({
+      ...subscriber,
+      source: widgetName || subscriber.source,
+    }),
+  );
 
   const projectApiKeys = await db
     .select()
@@ -324,10 +335,10 @@ export async function getProjectWithStats(projectId: string, userId: string) {
       ...widget,
       leadMagnet: leadMagnet
         ? {
-            id: leadMagnet.id,
-            description: leadMagnet.description,
-            previewText: leadMagnet.previewText,
-          }
+          id: leadMagnet.id,
+          description: leadMagnet.description,
+          previewText: leadMagnet.previewText,
+        }
         : null,
     }),
   );

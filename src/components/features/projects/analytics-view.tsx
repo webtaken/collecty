@@ -33,6 +33,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Activity, Users, Layout, MapPin } from "lucide-react";
+import {
+    Tooltip as UITooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AnalyticsViewProps {
     totalWidgets: number;
@@ -70,8 +75,9 @@ export function AnalyticsView({
             // Filter by widget if applicable
             if (selectedWidget !== "all" && h.widgetId !== selectedWidget) return;
 
-            const count = dayCounts.get(h.date) || 0;
-            dayCounts.set(h.date, count + 1);
+            const formattedDate = format(new Date(h.date), "yyyy-MM-dd");
+            const count = dayCounts.get(formattedDate) || 0;
+            dayCounts.set(formattedDate, count + 1);
         });
 
         // Make sure we have a year worth of data to show github style calendar
@@ -259,6 +265,15 @@ export function AnalyticsView({
                             <div className="inline-block" style={{ minWidth: 'min-content' }}>
                                 <ActivityCalendar
                                     data={calendarData}
+                                    showWeekdayLabels={true}
+                                    renderBlock={(block, activity) => (
+                                        <UITooltip key={activity.date} delayDuration={50}>
+                                            <TooltipTrigger asChild>{block}</TooltipTrigger>
+                                            <TooltipContent side="top">
+                                                {activity.count} subscriber{activity.count !== 1 ? 's' : ''} on {format(new Date(activity.date), "MMM d, yyyy")}
+                                            </TooltipContent>
+                                        </UITooltip>
+                                    )}
                                     theme={{
                                         light: ['#f1f5f9', '#c7d2fe', '#818cf8', '#4f46e5', '#312e81'],
                                         dark: ['#f1f5f9', '#c7d2fe', '#818cf8', '#4f46e5', '#312e81'],
