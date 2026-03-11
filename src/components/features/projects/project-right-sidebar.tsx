@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Layers,
   Sparkles,
+  Activity,
 } from "lucide-react";
 import {
   Dialog,
@@ -101,13 +102,33 @@ export function ProjectRightSidebar({ project }: ProjectRightSidebarProps) {
             General
           </h3>
           <nav className="space-y-1">
+            <Link href={`/projects/${project.id}/analytics`}>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-2 hover:bg-orange-50 hover:text-orange-600 transition-colors",
+                  isActive("/analytics") &&
+                  "bg-orange-50 text-orange-700 font-medium",
+                )}
+              >
+                <Activity
+                  className={cn(
+                    "w-4 h-4",
+                    isActive("/analytics")
+                      ? "text-orange-600"
+                      : "text-slate-500 group-hover:text-orange-600",
+                  )}
+                />
+                Analytics
+              </Button>
+            </Link>
             <Link href={`/projects/${project.id}/subscribers`}>
               <Button
                 variant="ghost"
                 className={cn(
                   "w-full justify-start gap-2 hover:bg-orange-50 hover:text-orange-600 transition-colors",
                   isActive("/subscribers") &&
-                    "bg-orange-50 text-orange-700 font-medium",
+                  "bg-orange-50 text-orange-700 font-medium",
                 )}
               >
                 <Users
@@ -127,7 +148,7 @@ export function ProjectRightSidebar({ project }: ProjectRightSidebarProps) {
                 className={cn(
                   "w-full justify-start gap-2 hover:bg-orange-50 hover:text-orange-600 transition-colors",
                   isActive("/settings") &&
-                    "bg-orange-50 text-orange-700 font-medium",
+                  "bg-orange-50 text-orange-700 font-medium",
                 )}
               >
                 <Settings
@@ -173,7 +194,7 @@ export function ProjectRightSidebar({ project }: ProjectRightSidebarProps) {
                     className={cn(
                       "w-full justify-start gap-2 pr-8 hover:bg-orange-50 hover:text-orange-600 transition-colors",
                       isWidgetActive(widget.id) &&
-                        "bg-orange-50 text-orange-700 font-medium",
+                      "bg-orange-50 text-orange-700 font-medium",
                     )}
                   >
                     <Layers
@@ -289,6 +310,6 @@ export function ProjectRightSidebar({ project }: ProjectRightSidebarProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div >
   );
 }

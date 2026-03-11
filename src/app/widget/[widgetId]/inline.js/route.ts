@@ -264,10 +264,10 @@ export async function GET(
         let geoData = null;
         try { const geoRes = await fetch('https://ipapi.co/json/'); if (geoRes.ok) geoData = await geoRes.json(); } catch {}
 
-        const metadata = { userAgent: navigator.userAgent, referrer: document.referrer, pageUrl: window.location.href, source: 'inline-widget', widgetId: WIDGET_ID };
+        const metadata = { userAgent: navigator.userAgent, referrer: document.referrer, pageUrl: window.location.href, source: 'inline-widget' };
         if (geoData) Object.assign(metadata, { ip: geoData.ip, city: geoData.city, region: geoData.region, country: geoData.country_name, countryCode: geoData.country_code, timezone: geoData.timezone, latitude: geoData.latitude, longitude: geoData.longitude, org: geoData.org });
 
-        const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, projectId: PROJECT_ID, metadata }) });
+        const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, projectId: PROJECT_ID, widgetId: WIDGET_ID, metadata }) });
         const data = await response.json();
 
         if (response.ok) {

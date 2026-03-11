@@ -456,13 +456,12 @@ export async function GET(
         '<button type="submit" class="collecty-button">' + escapeHtml(BUTTON_TEXT) + '</button>' +
       '</form>' +
       '<div class="collecty-message" role="status" aria-live="polite"></div>' +
-      ${
-        showBranding
-          ? `'<p class="collecty-branding">Powered by <a href="${escapeJs(
-              appUrl,
-            )}" target="_blank" rel="noopener noreferrer">Collecty</a></p>'`
-          : `''`
-      } +
+      ${showBranding
+      ? `'<p class="collecty-branding">Powered by <a href="${escapeJs(
+        appUrl,
+      )}" target="_blank" rel="noopener noreferrer">Collecty</a></p>'`
+      : `''`
+    } +
     '</div>';
 
     shadowRoot.appendChild(overlay);
@@ -531,8 +530,7 @@ export async function GET(
           userAgent: navigator.userAgent,
           referrer: document.referrer,
           pageUrl: window.location.href,
-          source: 'popup-widget',
-          widgetId: WIDGET_ID
+          source: 'popup-widget'
         };
 
         if (geoData) {
@@ -553,6 +551,7 @@ export async function GET(
           body: JSON.stringify({
             email,
             projectId: PROJECT_ID,
+            widgetId: WIDGET_ID,
             metadata: metadata,
           }),
         });
